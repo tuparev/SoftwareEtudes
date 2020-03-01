@@ -10,9 +10,9 @@ import Foundation
 
 /// `Node` is an abstract class that has an `Element` and implement `Hashable` and `CustomStringConvertible` protocols.
 /// All Tree and Graph nodes inherit from Node. They should add the functionality to connect nodes in different ways.
-public class Node<Element: CustomStringConvertible>: CustomStringConvertible {
+public class Node<Element> {
 
-    public var description: String { ": \(element.description)" }
+    public var description: String { "\(nodeDescription())" }
     public var element: Element
 
     init(_ element: Element) {
@@ -25,3 +25,11 @@ extension Node: Hashable {
 
     public func hash(into hasher: inout Hasher) { hasher.combine(ObjectIdentifier(self)) }
 }
+
+extension Node: CustomStringConvertible {
+    func nodeDescription() -> String {
+        if let el = element as? CustomStringConvertible  { return ": \(el.description)" }
+        else                                             { return ":\(Element.Type.self)" }
+    }
+}
+

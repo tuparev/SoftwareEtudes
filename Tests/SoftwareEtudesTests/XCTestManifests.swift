@@ -6,6 +6,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(SemanticVersionTests.allTests),
         testCase(StringUtilitiesTests.allTests),
         testCase(NodeTests.allTests),
+        XCTestCase(TreeNodeTests.allTests),
     ]
 }
 #endif
