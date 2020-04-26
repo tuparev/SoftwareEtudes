@@ -25,6 +25,9 @@ This repository is not a focused on a single project. It is a collection of idea
 - *Version history*: 
  - 0.3.0 - Initial port from older sources and new tests
 
+#### TypeNameDescribable 
+This is a simple protocol and corresponding extension implementing it to get the type name as a variable (works with both value type or reference type)
+
 ## Contributions
 Here I will add resources written by myself and used in one or more internal projects of my company. In addition to this some recourses will be written by colleagues and friends. Anyone is welcome to contribute too. Just drop me an email or DM me on Twitter but be warned - I reply slowly most of the time. To keep the overall style of the repository I will preserve the right to reject a contribution or edit and change it. 
 
