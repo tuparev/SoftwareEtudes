@@ -8,17 +8,9 @@
 
 import Foundation
 
-public class TreeNode: Node<Any>  {
-
-    weak var parent: TreeNode?
+public class TreeNode: AbstractTreeNode  {
     var children = [TreeNode]()
 
-    var isRoot: Bool { parent == nil }
     var isLeaf: Bool { children.isEmpty }
     var hasChildren: Bool { !isLeaf }
-
-    func root() -> TreeNode {
-        if isRoot { return self }
-        else      { return parent!.root() }
-    }
 }
