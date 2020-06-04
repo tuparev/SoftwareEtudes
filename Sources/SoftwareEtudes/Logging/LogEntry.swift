@@ -1,9 +1,11 @@
 //
-//  File.swift
+//  LogEntry.swift
 //  
 //
 //  Created by Georg Tuparev on 30/05/2020.
 //
+//  Contributions, suggestions, ideas by:
+//      1. Tomi Engel - @tomi_engel
 
 import Foundation
 
@@ -38,9 +40,11 @@ public protocol Logable {
 
 /// `LogEntry` provides super simple default implementation of `Logable` protocol.
 public struct LogEntry: Logable {
-    public private(set) var level: LogLevel
+    public private(set) var level: LogLevel = .`default`
     public private(set) var message: String?
     public private(set) var code: Int?
+    
+    public let timestamp = Date()
 
-    func localizedMessage() -> String { message ?? "No message" }
+    public func localizedMessage() -> String { message ?? "No message" }
 }
