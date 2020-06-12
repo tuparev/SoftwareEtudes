@@ -37,4 +37,8 @@ public class Node<T>: NodeProtocol where T: Equatable {
 
 public class AbstractGraph {
     public internal(set) var count = 0
+
+    public init() {
+        
+    }
 }

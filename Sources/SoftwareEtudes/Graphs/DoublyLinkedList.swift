@@ -35,7 +35,7 @@ public protocol LinkedListProtocol {
     //    subscript(tag: String) -> Node? { get }
 }
 
-public class LinkedList<T>: AbstractGraph, LinkedListProtocol where T: Equatable {
+public class DoublyLinkedList<T>: AbstractGraph, LinkedListProtocol where T: Equatable {
     public typealias AnyType = T
 
     public internal(set) var head: DoublyLinkedNode<AnyType>?
