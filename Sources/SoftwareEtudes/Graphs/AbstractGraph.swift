@@ -25,7 +25,7 @@ public class Node<T>: NodeProtocol where T: Equatable {
     public var element: AnyType?
     public var tags: [String]?
 
-    required public init(with element: AnyType?, named name: String?) {
+    required public init(with element: AnyType?, named name: String? = nil) {
         self.element = element
         self.name = name
     }
