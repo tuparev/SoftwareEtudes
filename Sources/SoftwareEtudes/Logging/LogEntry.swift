@@ -9,17 +9,15 @@
 
 import Foundation
 
-/// The levels are similar to Apple's `os_log` levels. Fatals feels like being a better name and we use it instead
-/// of `fault`. `Warning` is additional level. The gap between `error` and `default` is too wide. There are problems
-/// that we can fix, but they are worth reporting and taking a special care. This is exactly the case for `warning`.
-/// Channeled to `os_log` interface `warnings` perhaps should be converted to `default` logs.
+/// The levels are the same as `SwiftLog` levels.
 public enum LogLevel {
-    case fatal
-    case error
-    case warning
-    case `default`
-    case info
+    case trace
     case debug
+    case info
+    case notice
+    case warning
+    case error
+    case critical
 }
 
 public protocol Logable {
