@@ -8,6 +8,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(NodeTests.allTests),
         XCTestCase(TreeNodeTests.allTests),
         XCTestCase(TypeNameDescribableTests.allTests),
+        XCTestCase(MessageTests.allTests),
     ]
 }
 #endif
