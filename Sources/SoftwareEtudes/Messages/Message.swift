@@ -71,7 +71,7 @@ public struct MessagePayload: Messaging {
         self.code = code
         self.privacy = privacy
 
-        switch self.2k privacy {
+        switch self.privacy {
             case .noPrivacy:                              self.arguments = arguments
             case .strictlyPrivate where arguments != nil: self.arguments = Array(repeating: "***", count: arguments!.count)
             default:                                      self.arguments = nil
