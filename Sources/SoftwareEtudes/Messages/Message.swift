@@ -65,7 +65,7 @@ public struct MessagePayload: Messaging {
     public var arguments: [String]?
 
     public init?(key: String? = nil, code: Int? = nil, privacy: MessagePrivacy, arguments: [String]? = nil) {
-        guard (key == nil) && (code == nil)  else { return nil }
+        if (key == nil) && (code == nil) { return nil }
 
         self.key = key
         self.code = code
@@ -73,7 +73,7 @@ public struct MessagePayload: Messaging {
 
         switch self.privacy {
             case .noPrivacy:                              self.arguments = arguments
-            case .strictlyPrivate where arguments != nil: self.arguments = Array(repeating: "***", count: arguments!.count)
+            case .dataObfuscation where arguments != nil: self.arguments = Array(repeating: "***", count: arguments!.count)
             default:                                      self.arguments = nil
         }
     }

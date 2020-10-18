@@ -10,8 +10,12 @@ import XCTest
 
 final class MessageTests: XCTestCase {
 
-        func test_messageCreationWithCode() {
-        }
+    func test_messageCreationWithCode() {
+        let sut = MessagePayload(key: "blah", code: nil, privacy: .noPrivacy, arguments: nil)
+
+        XCTAssertEqual(sut?.key, "blah")
+        XCTAssertNil(sut?.code)
+    }
 
     override func setUp() {
         super.setUp()
