@@ -18,12 +18,12 @@ public protocol LocalizedMessageInterpreting {
 //MARK: - Message Interpreter -
 public class MessageInterpreter: MessageInterpreting, LocalizedMessageInterpreting {
 
-    /// If the message is nil it will be nice to have at least something like "Message with code: 1234"
+    /// If `stringValue` cannot be defined  it will be nice to have at least something like "Message with code: 1234"
     private static var  emptyMessageCodePrefix = "Massage with code: "
     public  static func setEmptyMessagePrefix(_ prefix: String) { emptyMessageCodePrefix = prefix }
 
-    /// If the message is nil it will be nice to have at least something like "Message with key: veryBadError"
-    private static var emptyMessageKeyPrefix = "Message with key: "
+    /// If `stringValue` cannot be defined it will be nice to have at least something like "Message with key: veryBadError"
+    private static var  emptyMessageKeyPrefix = "Message with key: "
     public  static func setEmptyMessageKeywordPrefix(_ prefix: String) { emptyMessageKeyPrefix = prefix }
 
     public init?(bundles: [Bundle]? = nil, definitionFilesNames: [String]? = nil, languageCodes: [String]? = nil ) {

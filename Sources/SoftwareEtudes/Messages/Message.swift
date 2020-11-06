@@ -24,10 +24,9 @@ import Foundation
 
 /// `MessagePrivacy` defines the way how message arguments should be handled.
 /// * `noPrivacy`       - arguments are visible, but it is strongly recommended, that this setting is used only in
-///                       development. Such messages should never be permanently stored or sent to external message
-///                       interpreter!
-/// * `dataObfuscation` - Arguments should be replaced by string with equal length, but containing only `*` characters.
-/// * `strictlyPrivate` - It is recommended to assign the arguments array to nil during message creation.
+///                       development.
+/// * `dataObfuscation` - Arguments should be obfuscated.
+/// * `strictlyPrivate` - It is recommended to remove the arguments during message creation.
 public enum MessagePrivacy: Int, Codable, CustomStringConvertible, CaseIterable {
     case noPrivacy
     case dataObfuscation
@@ -78,5 +77,4 @@ public struct MessagePayload: Messaging {
         }
     }
 }
-
 
