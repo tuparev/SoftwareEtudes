@@ -10,11 +10,10 @@ import XCTest
 
 final class MessageTests: XCTestCase {
 
-    func test_messageCreationWithCode() {
-        let sut = MessagePayload(key: "blah", code: nil, privacy: .noPrivacy, arguments: nil)
+    func test_messageCreationWithKey() {
+        let sut = Message(payload: .key("Bla"), privacy: .noPrivacy, arguments: nil)
 
-        XCTAssertEqual(sut?.key, "blah")
-        XCTAssertNil(sut?.code)
+        XCTAssertTrue(MessageInterpreter().stringValue(sut).hasSuffix("Bla"))
     }
 
     override func setUp() {
@@ -26,6 +25,6 @@ final class MessageTests: XCTestCase {
     }
 
         static var allTests = [
-            ("test_messageCreationWithCode", test_messageCreationWithCode)
+            ("test_messageCreationWithKey", test_messageCreationWithKey)
         ]
 }

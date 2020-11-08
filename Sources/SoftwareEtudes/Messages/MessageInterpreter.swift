@@ -26,17 +26,19 @@ public class MessageInterpreter: MessageInterpreting, LocalizedMessageInterpreti
     private static var  emptyMessageKeyPrefix = "Message with key: "
     public  static func setEmptyMessageKeywordPrefix(_ prefix: String) { emptyMessageKeyPrefix = prefix }
 
-    public init?(bundles: [Bundle]? = nil, definitionFilesNames: [String]? = nil, languageCodes: [String]? = nil ) {
+    public init(bundles: [Bundle]? = nil, definitionFilesNames: [String]? = nil, languageCodes: [String]? = nil ) {
         //TODO: Implement me!
     }
 
     public func stringValue(_ message: Messaging) -> String {
-        if let c = message.code, let message = messageCodes[c]        { return message }
-        else if let k = message.key, let message = messageKeywords[k] { return message }
-        else if let c = message.code                                  { return "\(MessageInterpreter.emptyMessageCodePrefix)\(c)"}
-        else if let k = message.key                                   { return "\(MessageInterpreter.emptyMessageKeyPrefix)\(k)"}
-
-        return "Undefined message"
+        switch message.payload {
+            case .key(let key):
+                if let m = messageKeywords[key] { return m }
+                else              { return "\(MessageInterpreter.emptyMessageKeyPrefix)\(key)" }
+            case .code(let code):
+                if let m = messageCodes[code] { return m }
+                else                          { return "\(MessageInterpreter.emptyMessageKeyPrefix)\(code)" }
+        }
     }
 
     public func localizedStringValue(_ message: Messaging) -> String {
