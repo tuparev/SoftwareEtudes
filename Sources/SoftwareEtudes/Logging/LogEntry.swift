@@ -99,6 +99,7 @@ public protocol Logable {
     /// in the initialiser.
     var timestamp: Date { get }
 
+    /// If present, it is recommended that the `domain` is in reverse DNS format (e.g. com.example.myapp.ui)
     var domain: String? { get }
 
     /// An optional dictionary. Most probably will be used for things like __FILE__ and __LINE__
