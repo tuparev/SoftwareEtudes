@@ -22,25 +22,25 @@ import Foundation
 
 
 /// `MessagePrivacy` defines the way how message arguments should be handled. The type is int to help compassion
-/// operations.
-/// * `noPrivacy`       - arguments are visible, but it is strongly recommended, that this setting is used only in
+/// operations. The vocabulary of `OSLogPrivacy` struct (part of `OSLog` is used whenever possible.
+/// * `public`       - arguments are visible, but it is strongly recommended, that this setting is used only in
+/// * `public`
 ///                       development.
-/// * `dataObfuscation` - Arguments should be obfuscated.
-/// * `strictlyPrivate` - It is recommended to remove the arguments during message creation or interpretation.
+/// * `sensitive` - Arguments should be obfuscated.
+/// * `private` - It is recommended to remove the arguments during message creation or interpretation.
 public enum MessagePrivacy: Int, Codable, CustomStringConvertible, CaseIterable {
-    case noPrivacy
-    case dataObfuscation
-    case strictPrivacy
+    case `public`  = 0
+    case auto      = 1
+    case sensitive = 2
+    case `private` = 3
 
     public var description: String {
         switch self {
-            case .noPrivacy:       return "No privacy required"
-            case .dataObfuscation: return "Arguments should be obfuscated"
-            case .strictPrivacy:   return "Arguments should be discarded"
+            case .`public`, .auto: return "No privacy required"
+            case .sensitive:       return "Sensitive arguments should be obfuscated"
+            case .`private`:       return "Private arguments should be removed"
         }
     }
-
-
 }
 
 public enum MessagePayload: Codable, CustomStringConvertible {
@@ -89,7 +89,7 @@ public protocol Messaging: Codable {
 
 //MARK: - Simple Message Implementation -
 
-/// `MessagePayload` is the simplest possible implementation of the `Messaging` protocol
+/// `Message` is the simplest possible implementation of the `Messaging` protocol
 public struct Message: Messaging {
 
     public var payload:   MessagePayload
@@ -101,9 +101,9 @@ public struct Message: Messaging {
         self.privacy = privacy
 
         switch self.privacy {
-            case .noPrivacy:                              self.arguments = arguments
-            case .dataObfuscation where arguments != nil: self.arguments = obfuscated(dictionary: arguments!)
-            default:                                      self.arguments = nil
+            case .`public`, .auto:                  self.arguments = arguments
+            case .sensitive where arguments != nil: self.arguments = obfuscated(dictionary: arguments!)
+            default:                                self.arguments = nil
         }
     }
 

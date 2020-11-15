@@ -17,7 +17,7 @@ public protocol Logging {
 /// will be sufficient for most uses. Note that once this ligger is finished, it will send logs asynchronously (in a
 /// background thread) and will try to be as optimal as system signposts.
 public class Logger: Logging {
-    public var privacy: MessagePrivacy = .strictPrivacy
+    public var privacy: MessagePrivacy = .sensitive
     public var channels = [LoggingChannelProtocol]()
 
     public init() {

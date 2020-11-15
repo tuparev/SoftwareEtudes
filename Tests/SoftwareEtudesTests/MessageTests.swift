@@ -11,7 +11,7 @@ import XCTest
 final class MessageTests: XCTestCase {
 
     func test_messageCreationWithKey() {
-        let sut = Message(payload: .key("Bla"), privacy: .noPrivacy, arguments: nil)
+        let sut = Message(payload: .key("Bla"), privacy: .`public`, arguments: nil)
 
         XCTAssertTrue(MessageInterpreter().stringValue(sut).hasSuffix("Bla"))
     }
