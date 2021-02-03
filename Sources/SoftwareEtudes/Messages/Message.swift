@@ -8,27 +8,29 @@
 /// Message (Payload) is a super simple, super minimalistic, and performant way to communicate bits of information within
 /// an application or across multiple processes.
 /// The creation and the interpretation of a human readable and possibly localisable string is postponed until a message
-/// reaches possible interpretation phase (if not discarded). Message interpretation might be implemented in a different
+/// reaches possible interpretation phase (if not discarded). Message interpretation might be implemented by a different
 /// process running on a different computer running different operation system.
 /// A massage contains either an integer `code`, or message `key` (String). If optional arguments are provided, the
-/// message factory should respect user privacy settings. If user privacy is also a consideration, messages containing
-/// arguments should not be permanently stored, or if storing is absolutely necessary, the arguments should be either
-/// obfuscated or excluded all together.
-/// The `MessageInterpreter`'s task is to generate human readable text (message). This text could be also localised.
+/// message factory should respect user privacy settings. Similarly, keys should never expose user information - they
+/// should be simple strings. If user privacy is also a consideration, messages containing arguments should not
+/// be permanently stored, or if storing is absolutely necessary, the arguments should be either obfuscated or excluded
+/// all together.
+/// The `MessageInterpreter`'s task is to generate human readable text (message). This text could be localised as well.
 /// **Note:** Originally arguments were defined as `AnyCodable` (an interface similar to `AnyHashable`), but because of
-/// performance considerations, I decided to use only String arguments.
+/// performance considerations, a decision was taken to use String only arguments.
 
 import Foundation
 
-
-/// `MessagePrivacy` defines the way how message arguments should be handled. The type is int to help compassion
-/// operations. The vocabulary of `OSLogPrivacy` struct (part of `OSLog` is used whenever possible.
-/// * `public`       - arguments are visible, but it is strongly recommended, that this setting is used only in
-/// * `public`
-///                       development.
+/// `MessagePrivacy` defines the way how message arguments should be handled. The type is int to help comparison
+/// operations. The vocabulary of `OSLogPrivacy` struct (part of `OSLog` is used whenever possible. If needed `public`
+/// and in some cases `auto` arguments could be stored permanently for later processing. `sensitive` and `private`
+/// arguments should never be stored permanently.
+/// * `public`    - Arguments are not redacted, but it is strongly recommended, that this option is used only during
+/// development and testing.
+/// * `auto`      - The default option to let the interpreting system infer whether to redact or show a value.
 /// * `sensitive` - Arguments should be obfuscated.
-/// * `private` - It is recommended to remove the arguments during message creation or interpretation.
-public enum MessagePrivacy: Int, Codable, CustomStringConvertible, CaseIterable {
+/// * `private`   - It is recommended to remove the arguments during message creation.
+public enum MessagePrivacy: Int, Codable, Equatable, Comparable, CustomStringConvertible, CaseIterable {
     case `public`  = 0
     case auto      = 1
     case sensitive = 2
@@ -36,13 +38,19 @@ public enum MessagePrivacy: Int, Codable, CustomStringConvertible, CaseIterable 
 
     public var description: String {
         switch self {
-            case .`public`, .auto: return "No privacy required"
-            case .sensitive:       return "Sensitive arguments should be obfuscated"
-            case .`private`:       return "Private arguments should be removed"
+            case .`public`:  return "public"
+            case .auto:      return "auto"
+            case .sensitive: return "sensitive"
+            case .`private`: return "private"
         }
     }
+
+    public static func < (left: MessagePrivacy, right: MessagePrivacy) -> Bool { left.rawValue < right.rawValue }
 }
 
+
+/// `MessagePayload` is either a code (Int value) or key (String value). It is used by the `MessageInterpreter` to produce
+/// (combining also the attributes) a human readable message
 public enum MessagePayload: Codable, CustomStringConvertible {
     case key(String)
     case code(Int)
@@ -79,7 +87,6 @@ public enum MessagePayload: Codable, CustomStringConvertible {
 ///
 /// It is strongly advisable to create message with either `code` of `key` equal to nil. If both are not nil, the message
 /// interpreter might deliver unpredictable message interpretation. If both are nil, a message should not be created.
-//TODO: Use MessagePayloadProtocol
 public protocol Messaging: Codable {
     var payload:   MessagePayload     { get }
     var privacy:   MessagePrivacy     { get }
@@ -102,12 +109,12 @@ public struct Message: Messaging {
 
         switch self.privacy {
             case .`public`, .auto:                  self.arguments = arguments
-            case .sensitive where arguments != nil: self.arguments = obfuscated(dictionary: arguments!)
+            case .sensitive where arguments != nil: self.arguments = obfuscated(arguments!)
             default:                                self.arguments = nil
         }
     }
 
-    private func obfuscated(dictionary: [String : String]) -> [String : String] {
+    private func obfuscated(_ dictionary: [String : String]) -> [String : String] {
         var result = [String : String]()
 
         for (k, v) in dictionary { result[k] = String(repeating: "*", count: v.count) }
