@@ -42,6 +42,13 @@ final class StringUtilitiesTests: XCTestCase {
         XCTAssertFalse("aaa".containsOnly(character: "b"))
   }
 
+    func test_replaceMatchesFromDictionary() {
+        let sut = "This string needs to replace <@bla@> with Tralala"
+        let dict = ["bla" : "Tralala"]
+
+        XCTAssertEqual(sut.replaceMatchesFrom(dictionary: dict), "This string needs to replace Tralala with Tralala")
+    }
+
     var str = ""
 
     override func setUp() {
@@ -58,7 +65,8 @@ final class StringUtilitiesTests: XCTestCase {
         ("test_substring", test_substring),
         ("test_substringFromLength", test_substringFromLength),
         ("test_substringLengthTo", test_substringLengthTo),
-        ("test_containsOnly", test_containsOnly)
+        ("test_containsOnly", test_containsOnly),
+        ("test_replaceMatchesFromDictionary", test_replaceMatchesFromDictionary),
     ]
 
 }

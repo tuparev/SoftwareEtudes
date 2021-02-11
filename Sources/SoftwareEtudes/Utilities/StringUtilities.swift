@@ -5,8 +5,9 @@
 //  Created by Georg Tuparev on 29/01/2020.
 //  Copyright © 2020 Tuparev Technologies. All rights reserved.
 //
-//  Contributions, suggestions, ideas by:
+//  Thanks for contributions, suggestions, ideas by:
 //      1. Charles Parnot - @cparnot
+//      2. serg_zhd answers at stackoverflow.com
 
 import Foundation
 
@@ -14,6 +15,15 @@ import Foundation
 
 //MARK: - Simplified substrings -
 public extension String {
+
+    func between(_ left: String, _ right: String) -> String? {
+        guard let leftRange = range(of: left), let rightRange = range(of: right, options: .backwards), leftRange.upperBound <= rightRange.lowerBound else { return nil }
+
+        let subRange           = self[leftRange.upperBound...]
+        let closestToLeftRange = subRange.range(of: right)!
+
+        return String(subRange[..<closestToLeftRange.lowerBound])
+    }
 
     func substring(from: Int = 0, to: Int? = nil) -> String {
         let start = from >= 0 ? from : 0
@@ -60,5 +70,24 @@ public extension String {
             if ch != character { return false }
         }
         return true
+    }
+
+    func replaceMatchesFrom(dictionary: [String : String], startMarker: String = "<@", endMarker: String = "@>", noMachString: String = "NO MATCH") -> String {
+        var (tempString, hasMatch): (String, Bool) = (self, false)
+
+        repeat {
+            (tempString, hasMatch) = tempString.replaceMatchesFrom(dictionary: dictionary, startMarker: startMarker, endMarker: endMarker, noMachString: noMachString)
+        } while hasMatch
+
+        return tempString
+    }
+
+    private func replaceMatchesFrom(dictionary: [String : String], startMarker: String = "<@", endMarker: String = "@>", noMachString: String = "NO MATCH") -> (result: String, hasMatch: Bool) {
+        guard var matchCandidate = self.between(startMarker, endMarker) else { return (self, false) }
+        let replacement = dictionary[matchCandidate] ?? noMachString
+
+        matchCandidate = "\(startMarker)\(matchCandidate)\(endMarker)"
+
+        return (self.replacingOccurrences(of: matchCandidate, with: replacement), true)
     }
 }
