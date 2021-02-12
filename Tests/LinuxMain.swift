@@ -3,5 +3,8 @@ import XCTest
 import SoftwareEtudesTests
 
 var tests = [XCTestCaseEntry]()
-tests += SoftwareEtudesTests.allTests()
+tests += SemanticVersioningTests.allTests()
+tests += MessageInterpreterTests.allTests()
+tests += MessageTests.allTests()
+
 XCTMain(tests)
