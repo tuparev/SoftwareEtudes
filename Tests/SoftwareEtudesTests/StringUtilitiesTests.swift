@@ -43,11 +43,30 @@ final class StringUtilitiesTests: XCTestCase {
   }
 
     func test_replaceMatchesFromDictionary() {
-        let sut = "This string needs to replace <@bla@> with Tralala"
+        let sut1 = "This string needs to replace <@bla@> with Tralala"
+        let sut2 = "This string needs to replace <@bla@> with Tralala and <@noMatch@>"
         let dict = ["bla" : "Tralala"]
 
-        XCTAssertEqual(sut.replaceMatchesFrom(dictionary: dict), "This string needs to replace Tralala with Tralala")
+        XCTAssertEqual(sut1.replace(matches: dict), "This string needs to replace Tralala with Tralala")
+        XCTAssertEqual(sut2.replace(matches: dict), "This string needs to replace Tralala with Tralala and NO MATCH")
     }
+
+    func test_PrefixAndPostfix() {
+        let str1 = "this is a string ..."
+        let str2 = "... this is a string"
+
+        XCTAssertEqual(str1.withoutSuffix(" ..."), "this is a string")
+        XCTAssertEqual(str1.withoutSuffix(" ...").withoutSuffix(" ..."), "this is a string")
+
+        XCTAssertEqual(str2.withoutPrefix("... "), "this is a string")
+        XCTAssertEqual(str2.withoutPrefix("... ").withoutPrefix("... "), "this is a string")
+
+        XCTAssertEqual(str1.withoutSuffix(" ...").appendingSuffixIfNeeded(" ..."), str1)
+        XCTAssertEqual(str1.withoutSuffix(" ...").appendingSuffixIfNeeded(" ...").appendingSuffixIfNeeded(" ..."), str1)
+
+        XCTAssertEqual(str2.withoutPrefix("... ").appendingPrefixIfNeeded("... "), str2)
+        XCTAssertEqual(str2.withoutPrefix("... ").appendingPrefixIfNeeded("... ").appendingPrefixIfNeeded("... "), str2)
+}
 
     var str = ""
 
@@ -67,6 +86,7 @@ final class StringUtilitiesTests: XCTestCase {
         ("test_substringLengthTo", test_substringLengthTo),
         ("test_containsOnly", test_containsOnly),
         ("test_replaceMatchesFromDictionary", test_replaceMatchesFromDictionary),
+        ("test_PrefixAndPostfix", test_PrefixAndPostfix),
     ]
 
 }
