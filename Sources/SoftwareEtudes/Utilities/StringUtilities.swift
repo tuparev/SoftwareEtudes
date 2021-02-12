@@ -59,6 +59,33 @@ public extension String {
     }
 }
 
+//MARK: - Suffix and Prefix methods -
+public extension String {
+    func withoutPrefix(_ prefix: String) -> String {
+        guard self.hasPrefix(prefix) else { return self }
+
+        return String(dropFirst(prefix.count))
+    }
+
+    func withoutSuffix(_ suffix: String) -> String {
+        guard self.hasSuffix(suffix) else { return self }
+
+        return String(dropLast(suffix.count))
+    }
+
+    func appendingPrefixIfNeeded(_ prefix: String) -> String {
+        guard !self.hasPrefix(prefix) else { return self }
+
+        return prefix.appending(self)
+    }
+
+    func appendingSuffixIfNeeded(_ suffix: String) -> String {
+        guard !self.hasSuffix(suffix) else { return self }
+
+        return appending(suffix)
+    }
+}
+
 //MARK: - Miscellaneous -
 public extension String {
 
@@ -72,19 +99,19 @@ public extension String {
         return true
     }
 
-    func replaceMatchesFrom(dictionary: [String : String], startMarker: String = "<@", endMarker: String = "@>", noMachString: String = "NO MATCH") -> String {
+    func replace(matches: [String : String], startMarker: String = "<@", endMarker: String = "@>", noMatch: String = "NO MATCH") -> String {
         var (tempString, hasMatch): (String, Bool) = (self, false)
 
         repeat {
-            (tempString, hasMatch) = tempString.replaceMatchesFrom(dictionary: dictionary, startMarker: startMarker, endMarker: endMarker, noMachString: noMachString)
+            (tempString, hasMatch) = tempString.replace(matches: matches, startMarker: startMarker, endMarker: endMarker, noMatch: noMatch)
         } while hasMatch
 
         return tempString
     }
 
-    private func replaceMatchesFrom(dictionary: [String : String], startMarker: String = "<@", endMarker: String = "@>", noMachString: String = "NO MATCH") -> (result: String, hasMatch: Bool) {
+    private func replace(matches: [String : String], startMarker: String = "<@", endMarker: String = "@>", noMatch: String = "NO MATCH") -> (result: String, hasMatch: Bool) {
         guard var matchCandidate = self.between(startMarker, endMarker) else { return (self, false) }
-        let replacement = dictionary[matchCandidate] ?? noMachString
+        let replacement = matches[matchCandidate] ?? noMatch
 
         matchCandidate = "\(startMarker)\(matchCandidate)\(endMarker)"
 
