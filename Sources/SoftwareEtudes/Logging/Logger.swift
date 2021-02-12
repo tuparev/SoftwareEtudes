@@ -28,9 +28,7 @@ public class Logger: Logging {
 
     //TODO: Properly configure the default logger as a console logger!
     private static var _defaultLogger: Logging!
-    public static func setDefaultLogger(_ logger: Logging) {
-        _defaultLogger = logger
-    }
+    public static func setDefaultLogger(_ logger: Logging) { _defaultLogger = logger }
 
     public var privacy: MessagePrivacy = .sensitive
     public var channels = [LoggingChannelProtocol]()
@@ -60,7 +58,6 @@ public class Logger: Logging {
         isFlushing = true
         defer { isFlushing = false }
 
-
         while !logQueue.isEmpty {
             let log = loggingQueue.sync { return logQueue.removeFirst() }
 
@@ -74,5 +71,4 @@ public class Logger: Logging {
             }
         }
     }
-
 }
