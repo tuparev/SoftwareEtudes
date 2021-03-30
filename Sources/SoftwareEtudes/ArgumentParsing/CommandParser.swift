@@ -76,8 +76,17 @@ public class CommandParser {
     ///
     /// Using this initialiser is equivalent to initialising a command parser with an
     /// empty string command.
-    @inlinable public init() { }
+    public convenience init?(overview: String = "", description: String? = nil) {
+        self.init(arguments: CommandLine.arguments, overview: overview, description: description)
+    }
 
+    public init?(arguments: [String], overview: String = "", description: String? = nil) {
+        guard arguments.count > 0 else { return nil }
+
+        self._arguments = arguments
+        self.overview = overview
+        utilityDescription = description
+    }
 
     /// The complete command to be parsed. It must me set before `parse()`. It is preferred to be set with one of
     /// the initialisers.
@@ -87,6 +96,14 @@ public class CommandParser {
     private var _commandName: String?
     private var _parsedTokens: [String] = []
 
+    /// List of actual arguments guaranteed to be not empty
+    private var _arguments: [String]
+
+    /// The overview of this executable, printed at the beginning of the help text.
+    public private(set) var overview: String
+
+    /// The description of this executable, printed underneat the synopsis.
+    public var utilityDescription: String?
 
     public func parse() -> Bool {  //TODO: Should return a Result type
         _parsedTokens = command.components(separatedBy: " ")
@@ -100,4 +117,24 @@ public class CommandParser {
 
     /// Returns the command or utility name, or nil if the command is not parsed or cannot be tokenised
     public func commandName() -> String? { _commandName }
+}
+
+// MARK: - Working with raw argument list (temporary) -
+public extension CommandParser {
+
+    /// Returns an array of raw (unprocessed) arguments. Not to be mixed with computed arguments
+    func rawArguments() -> [String] { return _arguments }
+
+    /// `true` if the raw arguments contain an exact match of `argument`
+    func containsRaw(argument:String ) -> Bool { return _arguments.contains(argument) }
+
+    /// If possible, it will return the argument followed by `after`. As an example, if the command
+    /// line contains `-f file` the method will return `file`
+    func firstRawArgument(after argument: String) -> String? {
+        if let index = _arguments.firstIndex(of: argument) {
+            let afterIndex = _arguments.index(after: index)
+            if afterIndex < _arguments.endIndex { return _arguments[afterIndex] }
+        }
+        return nil
+    }
 }
