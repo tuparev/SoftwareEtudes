@@ -57,10 +57,13 @@ extension URLSession {
         }
         dataTask.resume()
 
-        if waitForSeconds != nil {
-            dispatchTime =DispatchTime.now()
-            dispatchTime.advanced(by: .seconds(waitForSeconds))
+        if #available(macOS 10.15, *) {
+            if waitForSeconds != nil {
+                dispatchTime = DispatchTime.now()
+                dispatchTime = dispatchTime.advanced(by: .seconds(waitForSeconds!))
+            }
         }
+
         _ = semaphore.wait(timeout: dispatchTime)
 
         return (data, response, error)
