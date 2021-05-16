@@ -1,9 +1,8 @@
 //
 //  SemanticVersion.swift
 //  
-//
 //  Created by Georg Tuparev on 29/01/2020.
-//  Copyright © 2020 Tuparev Technologies. All rights reserved.
+//  Copyright © 2020-2021 Tuparev Technologies. All rights reserved.
 //
 
 import Foundation
@@ -19,9 +18,25 @@ import Foundation
 /// immediately following the patch version.
 ///
 ///  For complete description of Semantic Version check https://semver.org
-///
-/// `NOTE`: Currently only regular versions are supported. Later versions will support alfa and beta versions (as in Swift Package Manager)
+
 public struct SemanticVersion: Equatable, CustomStringConvertible, CustomDebugStringConvertible {
+
+    public enum PrereleaseVersion: Equatable, CustomStringConvertible, CustomDebugStringConvertible {
+
+        case unknown(String)
+        case alfa(Int)
+        case beta(Int)
+
+        public var description: String {
+            switch self {
+                case .unknown(let val): return "-\(val) [unknown]"
+                case .alfa(let val):    return "-\(val) [alfa]"
+                case .beta(let val):    return "-\(val) [beta]"
+            }
+        }
+
+        public var debugDescription: String { description }
+    }
 
     /// Major version when there are make incompatible API or functionality changes
     public private(set) var majorNumber: UInt
@@ -31,6 +46,14 @@ public struct SemanticVersion: Equatable, CustomStringConvertible, CustomDebugSt
 
     /// Patch version when backwards-compatible bug fixes are made
     public private(set) var patchNumber: UInt
+
+    public private(set) var prereleaseVersion: PrereleaseVersion?
+
+
+    //TODO: Implement PrereleaseVersion!!!
+
+
+
 
     /// Initialises a new version with the provided major, minor, and patch numbers.
     /// - Parameters:
