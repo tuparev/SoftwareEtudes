@@ -25,19 +25,26 @@ extension URLSession {
     /// - Parameters:
     ///   - url: the url of the request
     ///   - body: optional request body
+    ///   - httpMethod: Default is `POST`
+    ///   - waitForSeconds: Default is `.distantFuture`
     ///   - contentType: optional content type. Default is *text/plain*
     /// - Returns: a tuple of optional response data, the URLResponse itself, and optional Error
-    func synchronousDataTask(with url: URL, body: Data? = nil, contentType: String = "text/plain") -> (Data?, URLResponse?, Error?) {
+    func synchronousDataTask(with url: URL,
+                             body: Data? = nil,
+                             httpMethod: String = "POST",
+                             waitForSeconds: Int? = nil,
+                             contentType: String = "text/plain") -> (Data?, URLResponse?, Error?) {
         var data: Data?
         var response: URLResponse?
         var error: Error?
 
-        let semaphore = DispatchSemaphore(value: 0)
+        let semaphore    = DispatchSemaphore(value: 0)
+        var dispatchTime = DispatchTime.distantFuture
 
         var request = URLRequest(url: url)
         if body != nil {
-            request.httpBody = body
-            request.httpMethod = "POST"
+            request.httpBody   = body
+            request.httpMethod = httpMethod
         }
         request.setValue(contentType, forHTTPHeaderField: "Content-Type")
 
@@ -50,7 +57,11 @@ extension URLSession {
         }
         dataTask.resume()
 
-        _ = semaphore.wait(timeout: .distantFuture)
+        if waitForSeconds != nil {
+            dispatchTime =DispatchTime.now()
+            dispatchTime.advanced(by: .seconds(waitForSeconds))
+        }
+        _ = semaphore.wait(timeout: dispatchTime)
 
         return (data, response, error)
     }
