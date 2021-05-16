@@ -29,7 +29,7 @@ extension URLSession {
     ///   - waitForSeconds: Default is `.distantFuture`
     ///   - contentType: optional content type. Default is *text/plain*
     /// - Returns: a tuple of optional response data, the URLResponse itself, and optional Error
-    func synchronousDataTask(with url: URL,
+    public func synchronousDataTask(with url: URL,
                              body: Data? = nil,
                              httpMethod: String = "POST",
                              waitForSeconds: Int? = nil,
