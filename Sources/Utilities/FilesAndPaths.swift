@@ -27,8 +27,8 @@ public extension String {
     /// If `self` is supposed to be a path to a folder, it makes sure the last character is slash "/"
     ///
     /// If a `file://` type URL pointing to a folder is initialised with a string not ending with slash,
-    /// some URLs returned by several ``URL`` methods for some strange reason has no
-    /// URL schema. This method guarantees, that pats always end wit a slash.
+    /// some URLs returned by several ``Foundation/URL`` methods for some strange reason have no
+    /// URL schema (and therefore are invalid). This method guarantees, that paths always end with a slash.
     func normalisedFolderPath() -> String {
         if self.hasSuffix("/") { return self }
         else                   { return "\(self)/" }
