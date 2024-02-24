@@ -1,11 +1,16 @@
 # SoftwareEtudes
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ftuparev%2FSoftwareEtudes%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/tuparev/SoftwareEtudes)
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Ftuparev%2FSoftwareEtudes%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/tuparev/SoftwareEtudes)
+
 ## Intro
 This repository is not focused on a single project. It is a collection of ideas, sources, and hopefully useful sources for fellow developers using Apple infrastructure, including server side Swift.
 
 ## Modules
 
 ### Utilities
+Most of the sources in the `Utility` module are ready to be used. Please note, that some of the types are poorly documented and / or tested! See `To Do` section below if you like to contribute.
+
 #### Date+GeneralExtensions
 #### Debugging
 #### FilesAndPaths
@@ -18,6 +23,7 @@ This repository is not focused on a single project. It is a collection of ideas,
 #### URL+CodableExtensions
 
 ### ConfigurationEnvironment
+The sources in this module are very preliminary and so far only as a starting point for brainstorming. The should NOT be used in real projects and there will be NO backwards compatibility!
 
 ### Messages
 
@@ -28,6 +34,7 @@ This repository is not focused on a single project. It is a collection of ideas,
 ## Tutorials
 
 ## ChangeLog
+- 23.02.2024 - Releasing version 0.1.0. With this version we moved previous sources to the Utilities module and created To Do list for contributors.
 - 18.02.2024 - restarted the repository. The existing repository with the same name got very messy. It had several abandoned branches containing some useful sources, but difficult to merge. So, I decided to delete the existing repository and start fresh.
 
 ## To Do
