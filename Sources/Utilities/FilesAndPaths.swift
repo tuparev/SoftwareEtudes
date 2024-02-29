@@ -13,7 +13,7 @@ public extension URL {
     /// Returns App's default document directory
     ///
     /// This method is known to work only on macOS and iOS. It should work on other Apple platforms, but this is mot tested.
-    func documentsDirectory() -> URL {
+    static func documentsDirectory() -> URL {
         let paths              = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let documentsDirectory = paths[0]
 
