@@ -49,13 +49,13 @@ public class MessageInterpretingEnvironment {
     public func emptyKeyedMessageTemplates() { keyedMessageTemplates.removeAll() }
 
 //    public func codedMessageTemplatesFrom(jsonString: String) throws {
-//        let jsonDecoder = JSONDecoder()
+//        let jsonDecoder = JSONDecoder() //TODO: Make it iVar
 //
 //        codedMessageTemplates = try jsonDecoder.decode([CodedMessageTemplate].self, from: jsonString.data(using: .utf8)!)
 //    }
 //
 //    public func keyedMessageTemplatesFrom(jsonString: String) throws {
-//        let jsonDecoder = JSONDecoder()
+//        let jsonDecoder = JSONDecoder() //TODO: Make it iVar
 //
 //        keyedMessageTemplates = try jsonDecoder.decode([KeyedMessageTemplate].self, from: jsonString.data(using: .utf8)!)
 //    }
