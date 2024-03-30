@@ -151,6 +151,16 @@ public extension CommandLineParser {
         }
         return nil
     }
+
+    func firstRawArgumentAfter(argumentSet: [String]) -> String? {
+        if argumentSet.isEmpty { return nil }
+
+        for anArgument in argumentSet {
+            if let possibleResult = firstRawArgument(after: anArgument) { return possibleResult }
+        }
+        
+        return nil
+    }
 }
 
 
