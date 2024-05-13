@@ -17,14 +17,14 @@ public enum ConfigurationItemValueType: String, Codable {
 
 public protocol ConfigurationItemProtocol {
     var key: String                                { get }
-    var isRequiredItem: Bool?                      { get }
-    var itemValueType: ConfigurationItemValueType? { get }
+    var isRequiredItem: Bool?                      { get set }
+    var itemValueType: ConfigurationItemValueType? { get set }
     var value: String?                             { get set }
-    var defaultValueIfRequired: String?            { get }
-    var exampleValue: String?                      { get }
-    var commandLineArgumentsName: String?          { get }
-    var commandLineArgumentsModernName: String?    { get }  // e.g. --argument
-    var usageDescription: String?                  { get }
+    var defaultValueIfRequired: String?            { get set }
+    var exampleValue: String?                      { get set }
+    var commandLineArgumentsName: String?          { get set }
+    var commandLineArgumentsModernName: String?    { get set }  // e.g. --argument
+    var usageDescription: String?                  { get set }
 
     func isRequired() -> Bool                        // Default value - false
     func itemType() -> ConfigurationItemValueType    // Default is .string
@@ -61,10 +61,10 @@ public struct ConfigurationItem: Codable, ConfigurationItemProtocol {
         self.usageDescription               = usageDescription
     }
 
-    public func stringValueFor() -> String? { itemValueType  == .string ? value : nil }
-    public func intValueFor()    -> Int?    { (itemValueType == .int)    && (value != nil) ? Int(value!) : nil }
-    public func doubleValueFor() -> Double? { (itemValueType == .double) && (value != nil) ? Double(value!) : nil }
-    public func boolValueFor()   -> Bool?   { (itemValueType == .bool)   && (value != nil) ? Bool(value!) : nil }
+    public func stringValue() -> String? { itemValueType  == .string ? value : nil }
+    public func intValue()    -> Int?    { (itemValueType == .int)    && (value != nil) ? Int(value!) : nil }
+    public func doubleValue() -> Double? { (itemValueType == .double) && (value != nil) ? Double(value!) : nil }
+    public func boolValue()   -> Bool?   { (itemValueType == .bool)   && (value != nil) ? Bool(value!) : nil }
 }
 
 //MARK: - Extensions -

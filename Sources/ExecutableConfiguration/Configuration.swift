@@ -29,7 +29,7 @@ open class Configuration {
 
 
     public init(delegate: Configuring? = nil, configurationDomains: [any ConfigurationDomainProtocol]? = [any ConfigurationDomainProtocol]()) throws {
-        self.delegate = delegate
+        self.delegate = delegate // Ignore for now
 
         if let clp = CommandLineParser() { self.commandLineParser = clp }
         else                             { throw ConfiguratorError.creatingCommandLineParserError }

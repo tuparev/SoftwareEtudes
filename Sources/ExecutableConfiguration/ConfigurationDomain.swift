@@ -10,23 +10,25 @@ import Foundation
 
 public enum ConfigurationDomainHierarchyType: Int, Codable, CaseIterable {
     case runtime               = 99
-    case commandLine           = 30
-    case user                  = 20
-    case externalConfiguration = 10
+    case commandLine           = 70
+    case user                  = 50
+    case externalConfiguration = 20
+    case userDefaults          = 10
     case registration          = 0
 
     public func description() -> String {
         switch self {
-            case .runtime:               return "Runtime"
-            case .commandLine:           return "Command Line"
-            case .user:                  return "Defined by User Defaults"
-            case .externalConfiguration: return "From External Configuration File"
-            case .registration:          return "Defined by the Developer(s)"
+        case .runtime:               return "Runtime"
+        case .commandLine:           return "Command Line"
+        case .user:                  return "Defined by User Defaults"
+        case .externalConfiguration: return "From External Configuration File"
+        case .userDefaults:          return "From OS level User Defaults"
+        case .registration:          return "Defined by the Developer(s)"
         }
     }
 }
 
-public protocol ConfigurationDomainProtocol {
+public protocol ConfigurationDomainProtocol: Identifiable {
     var domainType: ConfigurationDomainHierarchyType { get }
 
     func configurationItemFor(key: String) -> (any ConfigurationItemProtocol)?
@@ -34,9 +36,14 @@ public protocol ConfigurationDomainProtocol {
 }
 
 public struct ConfigurationDomain: ConfigurationDomainProtocol {
+    public var id: UUID
     public var domainType: ConfigurationDomainHierarchyType
-
-    public init(domain: ConfigurationDomainHierarchyType, configurationItems: [String : any ConfigurationItemProtocol]? = [String : any ConfigurationItemProtocol]()) {
+    public var name: String?
+    
+    public init(id: UUID? = UUID(),
+                domain: ConfigurationDomainHierarchyType,
+                configurationItems: [String : any ConfigurationItemProtocol]? = [String : any ConfigurationItemProtocol]()) {
+        self.id                 = id!
         self.domainType         = domain
         self.configurationItems = configurationItems!
     }
@@ -48,3 +55,4 @@ public struct ConfigurationDomain: ConfigurationDomainProtocol {
     private var configurationItems: [String : ConfigurationItemProtocol]
 }
 
+//TODO: Extensions to convert different sources into domains (e.g. config file, UserDefaults, ...)
