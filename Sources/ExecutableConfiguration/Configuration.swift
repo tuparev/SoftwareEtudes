@@ -44,7 +44,16 @@ open class Configuration {
     public func doubleValueFor(key: String, domain: ConfigurationDomainHierarchyType? = nil) -> Double? { nil } //TODO: Implement me!
     public func boolValueFor(key: String, domain: ConfigurationDomainHierarchyType? = nil)   -> Bool?   { nil } //TODO: Implement me!
 
-    public func configurationItemFor(key: String, domain: ConfigurationDomainHierarchyType? = .runtime) -> (any ConfigurationItemProtocol)?        { nil } //TODO: Implement me!
+    public func configurationItemFor(key: String, domain: ConfigurationDomainHierarchyType? = .runtime) -> (any ConfigurationItemProtocol)? {
+        let domains = domainStack.filter { $0.domainType == domain }
+        
+        for domain in domains {
+            if let item = domain.configurationItemFor(key: key) { return item }
+        }
+        
+        return nil
+    }
+    
     public func setConfiguration(item: any ConfigurationItemProtocol, forKey: String, domain: ConfigurationDomainHierarchyType? = .runtime) throws { }     //TODO: Implement me!
 
     //MARK: - Private properties
