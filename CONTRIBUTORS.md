@@ -14,3 +14,4 @@ SoftwareEtudes project.
 - Charles Parnot - <cparnot@tuparev.com> - @cparnot
 - Georg Tuparev - <gtupare@tuparev.com> - @tuparev
 - Hunter William Holland - <huholland.fl@gmail.com>
+- Zhanna Hakobyan - <zh.hakobyan@tuparev.com>

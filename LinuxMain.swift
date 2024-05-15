@@ -2,6 +2,7 @@ import XCTest
 
 import SoftwareEtudesTests
 
+//TODO: List all classes!
 var tests = [XCTestCaseEntry]()
 tests += SemanticVersioningTests.allTests()
 //tests += MessageInterpreterTests.allTests()
