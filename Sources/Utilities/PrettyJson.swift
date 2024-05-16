@@ -50,3 +50,9 @@ public class PrettyJSONEncoder: JSONEncoder {
 }
 
 
+//TODO: An idea for future extensions.
+// Every `Codable` type should comply to `JSONable` protocol that has 2 methods:
+// func toJSON() -> String
+// static func fromJSON(_ string: String) -> <Type>
+//
+// I think this could be easily implemented with macros -> try it!
