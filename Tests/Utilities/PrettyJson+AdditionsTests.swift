@@ -9,40 +9,65 @@ import Foundation
 import XCTest
 @testable import SoftwareEtudesUtilities
 
-struct MockObject: Codable, JSONable {
+private struct MockObject: Codable, JSONable {
     typealias `Type` = MockObject
-    var value: String
+    
+    var value     : String
+    var subObject : MockSubObject
+}
+
+private struct MockSubObject: Codable, JSONable {
+    typealias `Type` = MockSubObject
+    
+    var subValue: String
 }
 
 final class JSONableTests: XCTestCase {
     
-    func testDecodeJsonValid() {
-        let json   = "{\"value\":\"test\"}"
+    func test_decode_withValidJson() {
+        let json   =  "{\n  \"value\" : \"test1\",\n  \"subObject\" : {\n  \"subValue\" : \"test2\"\n  }  \n}"
         let object = MockObject.fromJSON(json)
         
         XCTAssertNotNil(object)
-        XCTAssertEqual (object?.value, "test")
+        XCTAssertEqual (object?.value, "test1")
+        XCTAssertEqual (object?.subObject.subValue, "test2")
     }
     
-    func testDecodeJsonInvalid() {
-        let json   = "{\"value\":\"test\""
+    func test_decode_withInvalidJson() {
+        let json   = "{\n  \"subObject\" : "
         let object = MockObject.fromJSON(json)
         
         XCTAssertNil(object)
     }
     
-    func testEncodeJsonValid() {
-        let object = MockObject(value: "test")
+    func test_encode_withValidJson() {
+        let object = MockObject(value: "test1", subObject: .init(subValue: "test2"))
         let json   = object.toJson()
         
         XCTAssertNotNil(json)
-        XCTAssertEqual (json, "{\n  \"value\" : \"test\"\n}")
     }
     
-    func testEncodeJsonInvalid() {
-        let object = MockObject(value: "test")
+    func test_encode_withInvalidJson() {
+        let object = MockObject(value: "test1", subObject: .init(subValue: "test2"))
         let json   = object.toJson()
         
-        XCTAssertNotEqual(json, "{\"value\":\"test\"}")
+        XCTAssertNotEqual(json, "{\n  \"subObject\" : ")
     }
+    
+    override func setUp() {
+        super.setUp()
+    }
+    
+    override func tearDown() {
+        super.tearDown()
+    }
+    
+    
+    static var allTests = [
+        ("test_decode_withValidJson",   test_decode_withValidJson),
+        ("test_decode_withInvalidJson", test_decode_withInvalidJson),
+        ("test_encode_withValidJson",   test_encode_withValidJson),
+        ("test_encode_withInvalidJson", test_encode_withInvalidJson)
+    ]
+    
 }

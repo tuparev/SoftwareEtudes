@@ -50,14 +50,7 @@ public class PrettyJSONEncoder: JSONEncoder {
 }
 
 
-//TODO: An idea for future extensions.
-// Every `Codable` type should comply to `JSONable` protocol that has 2 methods:
-// func toJSON() -> String?
-// static func fromJSON(_ string: String) -> <Type>?
-//
-// I think this could be easily implemented with macros -> try it!
-
-//MARK: - JSONable
+/// `JSONable` is protocol for extending system provided JSON Decoder and Encoder
 protocol JSONable {
     associatedtype `Type`: Decodable
     
@@ -65,9 +58,11 @@ protocol JSONable {
     static func fromJSON(_ string: String) -> `Type`?
 }
 
+/// The extension implements `fromJSON` method  of the `JSONable` protocol
 extension JSONable {
+    /// Converts the json string to `Type` instance
     static func fromJSON(_ string: String) -> `Type`? {
-        let decoder = JSONDecoder()
+        let decoder = PrettyJSONDecoder()
         
         do {
             let data   = string.data(using: .utf8)!
@@ -78,10 +73,11 @@ extension JSONable {
     }
 }
 
+/// The extension of the `Encodable` where instance is `JSONable`
 extension Encodable where Self: JSONable {
+    /// Converts the instance to json string
     func toJson() -> String? {
-        let encoder              = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+        let encoder = PrettyJSONEncoder()
         
         do {
             let data = try encoder.encode(self)
