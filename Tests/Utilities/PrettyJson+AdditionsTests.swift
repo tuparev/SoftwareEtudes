@@ -4,6 +4,8 @@
 //
 //  Created by Zhanna on 16.05.24.
 //
+//      1. Zhanna Hakobyan - see CONTRIBUTORS
+//
 
 import Foundation
 import XCTest

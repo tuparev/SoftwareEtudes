@@ -5,6 +5,8 @@
 //  Created by Georg Tuparev on 30/04/2024.
 //  Copyright © See Framework's LICENSE file
 //
+//      1. Zhanna Hakobyan - see CONTRIBUTORS
+//
 
 import Foundation
 
@@ -50,7 +52,13 @@ public class PrettyJSONEncoder: JSONEncoder {
 }
 
 
-/// `JSONable` is protocol for extending system provided JSON Decoder and Encoder
+/// `JSONable` is protocol for extending system provided JSON Decoder and Encoder to make it easier to convert a type to ``String`` or create an instance of
+/// a type from ``String``
+///
+/// These two operations are very common and we wonder why the standard ``Codable`` implementation does not include them.
+///
+/// **Note: ** Current implementation is tested only with relatively simple flat types. Perhaps for complex and nested types we will need to implement something
+/// using macros, but this is a project for the future.
 protocol JSONable {
     associatedtype `Type`: Decodable
     
@@ -60,7 +68,10 @@ protocol JSONable {
 
 /// The extension implements `fromJSON` method  of the `JSONable` protocol
 extension JSONable {
-    /// Converts the json string to `Type` instance
+
+    /// Converts the JSON string into `Type` instance
+    ///
+    /// **Note: ** In case when the conversion is not possible the method returns `nil`. It is up to the client to handle properly these cases.
     static func fromJSON(_ string: String) -> `Type`? {
         let decoder = PrettyJSONDecoder()
         
@@ -73,7 +84,10 @@ extension JSONable {
     }
 }
 
-/// The extension of the `Encodable` where instance is `JSONable`
+/// The extension of the `Encodable` where instance is `JSONable` adds functionality to convert any ``Encodable`` type to a well-formatted and
+/// human readable string
+///
+/// **Note: ** to use this functionality you need to use `PrettyJSONEncoder` instead of the standard `JSONEncoder`.
 extension Encodable where Self: JSONable {
     /// Converts the instance to json string
     func toJson() -> String? {
