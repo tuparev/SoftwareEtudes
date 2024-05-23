@@ -30,6 +30,9 @@ public protocol ConfigurationItemProtocol {
     func itemType() -> ConfigurationItemValueType    // Default is .string
 }
 
+public struct DynamicConfigurationItem {
+    
+}
 public struct ConfigurationItem: Codable, ConfigurationItemProtocol {
     public var key: String
     public var isRequiredItem: Bool?

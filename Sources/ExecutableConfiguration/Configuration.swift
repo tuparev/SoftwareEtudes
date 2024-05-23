@@ -15,27 +15,40 @@ public protocol Configuring {
     func configurationFilePath() -> String?
 }
 
+public protocol ConfigurationDocumenting {
+    //TODO: Implement me!
+}
+
 
 /// `Configuration` is a high-level class that provides runtime configuration of command line tools and daemons. It is based on lower level Command Line Argument Parser and on the
 /// standard  UserDefaults.
 ///
 /// 
 open class Configuration {
+
+    public static var delegate: Configuring?
+    public static var presetDomains:  [any ConfigurationDomainProtocol]?
+
+    public static var shared: Configuration? = Configuration()
+
     public enum ConfiguratorError: Error {
         case creatingCommandLineParserError
     }
 
-    public var commandLineParser: CommandLineParser
+
+    public var commandLineParser: CommandLineParser?
 
 
-    public init(delegate: Configuring? = nil, configurationDomains: [any ConfigurationDomainProtocol]? = [any ConfigurationDomainProtocol]()) throws {
-        self.delegate = delegate // Ignore for now
-
+    public init?() {
         if let clp = CommandLineParser() { self.commandLineParser = clp }
-        else                             { throw ConfiguratorError.creatingCommandLineParserError }
+        else                             { return nil }
+
+        if let presetDomain = Configuration.presetDomains { self.delegate = presetDomain as? any Configuring}
+        self.delegate = self.commandLineParser
+
 
         // Finalise initiation
-        completeDomaineStackFrom(template: configurationDomains!)
+        completeDomaineStackFrom(template: Configuration.presetDomains ?? [any ConfigurationDomainProtocol]())
     }
 
     //MARK: Principle methods

@@ -128,7 +128,7 @@ open class CommandLineParser: Configuring {
     private var originalArguments: [String]!
     private var documentation = UtilityDocumentation()
 
-    private var didParse = false
+    private var didParse    = false
     private var parseResult = true
 }
 
