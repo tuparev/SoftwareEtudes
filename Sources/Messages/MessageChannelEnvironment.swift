@@ -8,12 +8,13 @@
 
 import Foundation
 
-public class MessageChannelEnvironment {
+open class MessageChannelEnvironment {
 
     public var obfuscationCharacter              = "*"
     public var shouldObfuscateSensitiveArguments = true
     public var shouldChannelPrivateArguments     = false
 
+    /// These arrays give a chance to configure externally the privacy settings of an individual `Message`.
     public var knownPublicArgumentKeys    = [String]()
     public var knownSensitiveArgumentKeys = [String]()
     public var knownPrivateArgumentKeys   = [String]()

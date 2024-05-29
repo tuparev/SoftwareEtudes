@@ -8,6 +8,10 @@
 
 import Foundation
 
+//
+//TODO: Extract a protocol and make the Interpreter's environment to be of type of this protocol!
+//
+
 public class MessageInterpretingEnvironment {
 
 

@@ -8,15 +8,15 @@
 
 import Foundation
 
-/// `Privacy` defines message arguments privacy level
+/// `MessagePrivacy` defines message argument's privacy level
 ///
 /// Message arguments might contain sensitive information, and therefore should be handled with care. It is recommended
 /// that sensitive information should not be visible for unauthorised people, and should not be made persistent. If
 /// needed `public` and in some cases `auto` arguments could be stored permanently for later processing but `sensitive`
-/// and `private` arguments should never be stored permanently. It is also advisable that `private` arguments should
-/// not leave the boundaries of the process that generated the message.
+/// and `private` arguments should never be stored permanently or passed to external processes. 
 ///
-/// The privacy considerations are valid only for arguments with a key starting with an exclamation mark "!".
+/// The privacy considerations are valid only for arguments with a key starting with `Message.sensitivityArgumentPrefix` or
+/// `Message.privacyArgumentPrefix`.
 ///
 /// The enum is `Int` to allow comparison operations. The vocabulary of `OSLogPrivacy` struct (part of `OSLog` is used
 /// whenever possible.
@@ -32,6 +32,10 @@ public enum MessagePrivacy: Int, Codable, Comparable, CaseIterable {
     case `private` = 2
 }
 
+//
+//TODO: Chain channels in a channel tree!
+//
+
 public protocol MessageChanneling {
 
     func channel(message: Message)
@@ -41,10 +45,10 @@ public protocol MessageChanneling {
 
 public extension MessageChanneling {
     func shouldChannel(message: Message) -> Bool { true }
-    func privacyStatusFor(argument: String) -> MessagePrivacy { .private }
+    func privacyStatusFor(argument: String) -> MessagePrivacy { .private } //TODO: Make proper implementation!
 }
 
-public class AbstractMessageChannel: MessageChanneling {
+open class AbstractMessageChannel: MessageChanneling {
 
     public let environment: MessageChannelEnvironment
     public let interpreter: MessageInterpreting?
