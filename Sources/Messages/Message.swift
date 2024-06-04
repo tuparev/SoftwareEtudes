@@ -58,3 +58,15 @@ extension Message.Payload: CustomStringConvertible {
         }
     }
 }
+
+extension Message: CustomStringConvertible {
+    public var description: String {
+        // Also include arguments (with privacy concerns), actions, and formatting infos
+        let payloadStr        = payload.description
+        let actionsStr        = actions?       .description ?? "<nil>"
+        let argumentsStr      = arguments?     .description ?? "<nil>"
+        let formattingInfoStr = formattingInfo?.description ?? "<nil>"
+
+        return "Payload: \(payloadStr)\nArguments: \(argumentsStr)\nActions: \(actionsStr)\nFormattingInfo: \(formattingInfoStr)\n"
+    }
+}
