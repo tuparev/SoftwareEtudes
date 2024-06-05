@@ -7,12 +7,28 @@
 
 import Foundation
 import SoftwareEtudesMessages
+import SoftwareEtudesLogger
 
 @main
 struct Main {
     static func main() async throws {
-        let obj = MessageUsage()
-        obj.createChannel()
+        //let obj = MessageUsage()
+       // obj.createChannel()
+        
+        let logger = Logger(label: "")
+        
+        
+        logger.log(level: .error, "BBBB")
+        logger.log(level: .critical, "BBBB")
+        logger.log(level: .debug, "BBBB")
+        logger.log(level: .info, "BBBB")
+        logger.log(level: .notice, "BBBB")
+        logger.log(level: .warning, "BBBB")
+        logger.log(level: .trace, "BBBB")
+        
+        print(logger.logLevel)
+        
+        
     }
 }
 
