@@ -63,27 +63,3 @@ extension Logger {
         }
     }
 }
-
-extension Logger.MetadataProvider {
-    /// A pseudo-`MetadataProvider` that can be used to merge metadata from multiple other `MetadataProvider`s.
-    ///
-    /// ### Merging conflicting keys
-    ///
-    /// `MetadataProvider`s are invoked left to right in the order specified in the `providers` argument.
-    /// In case multiple providers try to add a value for the same key, the last provider "wins" and its value is being used.
-    ///
-    /// - Parameter providers: An array of `MetadataProvider`s to delegate to. The array must not be empty.
-    /// - Returns: A pseudo-`MetadataProvider` merging metadata from the given `MetadataProvider`s.
-    public static func multiplex(_ providers: [Logger.MetadataProvider]) -> Logger.MetadataProvider? {
-        assert(!providers.isEmpty, "providers MUST NOT be empty")
-        return Logger.MetadataProvider {
-            providers.reduce(into: [:]) { metadata, provider in
-                let providedMetadata = provider.get()
-                guard !providedMetadata.isEmpty else {
-                    return
-                }
-                metadata.merge(providedMetadata, uniquingKeysWith: { _, rhs in rhs })
-            }
-        }
-    }
-}

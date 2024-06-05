@@ -431,6 +431,7 @@ internal struct StdioOutputStream: TextOutputStream {
 #if canImport(Darwin)
 let systemStderr = Darwin.stderr
 let systemStdout = Darwin.stdout
+
 #endif
 
 /// `StreamLogHandler` is a simple implementation of `LogHandler` for directing
