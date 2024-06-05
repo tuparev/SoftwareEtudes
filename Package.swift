@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "SoftwareEtudesUtilities",               targets: ["SoftwareEtudesUtilities"]),
         .library(name: "SoftwareEtudesMessages",                targets: ["SoftwareEtudesMessages"]),
         .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
+        .library(name: "SoftwareEtudesLogger",                  targets: ["SoftwareEtudesLogger"]),
         .executable(name: "SoftwareEtudesMessaging",            targets: ["SoftwareEtudesMessaging"])
     ],
     targets: [
@@ -20,7 +21,8 @@ let package = Package(
         .target(name: "SoftwareEtudesUtilities",               dependencies: [], path: "Sources/Utilities"),
         .target(name: "SoftwareEtudesMessages",                dependencies: [], path: "Sources/Messages"),
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
-        .executableTarget(name: "SoftwareEtudesMessaging",     dependencies: ["SoftwareEtudesMessages"], path: "Sources/Messaging"),
+        .target(name: "SoftwareEtudesLogger",                  dependencies: [], path: "Sources/Logger"),
+        .executableTarget(name: "SoftwareEtudesMessaging",     dependencies: ["SoftwareEtudesMessages", "SoftwareEtudesLogger"], path: "Sources/Messaging"),
 
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
