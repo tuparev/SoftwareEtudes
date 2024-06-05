@@ -10,7 +10,7 @@ import SoftwareEtudesMessages
 
 @main
 struct Main {
-    static func main() {
+    static func main() async throws {
         let obj = MessageUsage()
         obj.createChannel()
     }
