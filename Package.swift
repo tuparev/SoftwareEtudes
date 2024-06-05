@@ -11,7 +11,8 @@ let package = Package(
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(name: "SoftwareEtudesUtilities",               targets: ["SoftwareEtudesUtilities"]),
         .library(name: "SoftwareEtudesMessages",                targets: ["SoftwareEtudesMessages"]),
-        .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"])
+        .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
+        .executable(name: "SoftwareEtudesMessaging",            targets: ["SoftwareEtudesMessaging"])
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -19,10 +20,10 @@ let package = Package(
         .target(name: "SoftwareEtudesUtilities",               dependencies: [], path: "Sources/Utilities"),
         .target(name: "SoftwareEtudesMessages",                dependencies: [], path: "Sources/Messages"),
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
+        .executableTarget(name: "SoftwareEtudesMessaging",     dependencies: ["SoftwareEtudesMessages"], path: "Sources/Messaging"),
 
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
         .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
-
     ]
 )
