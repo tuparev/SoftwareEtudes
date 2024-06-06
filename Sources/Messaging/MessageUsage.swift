@@ -12,23 +12,18 @@ import SoftwareEtudesLogger
 @main
 struct Main {
     static func main() async throws {
-        //let obj = MessageUsage()
-       // obj.createChannel()
+//        let obj = MessageUsage()
+//        obj.createChannel()
         
         let logger = Logger(label: "")
         
-        
-        logger.log(level: .error, "BBBB")
-        logger.log(level: .critical, "BBBB")
-        logger.log(level: .debug, "BBBB")
-        logger.log(level: .info, "BBBB")
-        logger.log(level: .notice, "BBBB")
-        logger.log(level: .warning, "BBBB")
-        logger.log(level: .trace, "BBBB")
-        
-        print(logger.logLevel)
-        
-        
+        logger.log(level: .trace,    "test")
+        logger.log(level: .debug,    "test")
+        logger.log(level: .info,     "test")
+        logger.log(level: .notice,   "test")
+        logger.log(level: .warning,  "test")
+        logger.log(level: .error,    "test")
+        logger.log(level: .critical, "test")
     }
 }
 
