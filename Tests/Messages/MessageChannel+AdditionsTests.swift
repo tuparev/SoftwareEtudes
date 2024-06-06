@@ -31,7 +31,7 @@ final class MessageChannelAdditionsTests: XCTestCase {
         let message     = Message(
             payload:        Message.Payload.code(code: 1),
             arguments:      ["password" : "!123456"],
-            actions:        ["email"    : "test@tuparev.com"],
+            actions:        ["email"    : "test@domain.com"],
             formattingInfo: ["color"    : "#FF0000", "fontSize" : "14"])
         
         channel.channel(message: message)
