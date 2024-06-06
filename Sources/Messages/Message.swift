@@ -29,7 +29,7 @@ public struct Message: Codable, Sendable {
     /// `payload` is the actual body of the message
     public let payload: Payload
 
-    ///  A key with `sensitivityArgumentPrefix` prefix indicates an explicit declaration os sensitive data, and with `privacyArgumentPrefix` - private data (like credit card number).
+    ///  A value with `sensitivityArgumentPrefix` prefix indicates an explicit declaration os sensitive data, and with `privacyArgumentPrefix` - private data (like credit card number).
     ///  The MessageChannel might implement its own lists of sensitive and private data in addition to the explicitly defined in the message.
     public let arguments: [String : String]?
 

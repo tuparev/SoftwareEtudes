@@ -30,9 +30,9 @@ final class MessageChannelAdditionsTests: XCTestCase {
         let channel     = AbstractMessageChannel.init(environment: environment, interpreter: interpreter)
         let message     = Message(
             payload:        Message.Payload.code(code: 1),
-            arguments:      ["!123456" : "password"],
-            actions:        ["email"   : "vzaman@tuparev.com"],
-            formattingInfo: ["color"   : "#FF0000", "fontSize" : "14"])
+            arguments:      ["password" : "!123456"],
+            actions:        ["email"    : "test@tuparev.com"],
+            formattingInfo: ["color"    : "#FF0000", "fontSize" : "14"])
         
         channel.channel(message: message)
         
