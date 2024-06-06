@@ -51,7 +51,6 @@ public struct Message: Codable, Sendable {
 
 extension Message.Payload: CustomStringConvertible {
     public var description: String {
-        //TODO: Also include arguments (with privacy concerns), actions, and formatting infos
         switch self {
             case .key(let key):   return "Key: \(key)"
             case .code(let code): return "Code: \(code)"
@@ -61,8 +60,7 @@ extension Message.Payload: CustomStringConvertible {
 
 extension Message: CustomStringConvertible {
     public var description: String {
-        // Also include arguments (with privacy concerns), actions, and formatting infos
-        let payloadStr        = payload.description
+        let payloadStr        = payload        .description
         let actionsStr        = actions?       .description ?? "<nil>"
         let argumentsStr      = arguments?     .description ?? "<nil>"
         let formattingInfoStr = formattingInfo?.description ?? "<nil>"
