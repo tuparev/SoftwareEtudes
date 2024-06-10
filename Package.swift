@@ -13,7 +13,7 @@ let package = Package(
         .library(name: "SoftwareEtudesMessages",                targets: ["SoftwareEtudesMessages"]),
         .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
         .library(name: "SoftwareEtudesLogger",                  targets: ["SoftwareEtudesLogger"]),
-        .executable(name: "SoftwareEtudesMessaging",            targets: ["SoftwareEtudesMessaging"])
+        .executable(name: "SoftwareEtudesExecutableLogger",            targets: ["SoftwareEtudesExecutableLogger"])
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -22,7 +22,7 @@ let package = Package(
         .target(name: "SoftwareEtudesMessages",                dependencies: [], path: "Sources/Messages"),
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
         .target(name: "SoftwareEtudesLogger",                  dependencies: ["SoftwareEtudesMessages"], path: "Sources/Logger"),
-        .executableTarget(name: "SoftwareEtudesMessaging",     dependencies: ["SoftwareEtudesMessages", "SoftwareEtudesLogger"], path: "Sources/Messaging"),
+        .executableTarget(name: "SoftwareEtudesExecutableLogger",     dependencies: ["SoftwareEtudesMessages", "SoftwareEtudesLogger"], path: "Sources/ExecutableLogger"),
 
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
