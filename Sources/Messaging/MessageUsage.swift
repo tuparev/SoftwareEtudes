@@ -18,17 +18,14 @@ struct Main {
         let logger = Logger(label: "")
         
         
-        logger.log(level: .error, "BBBB")
-        logger.log(level: .critical, "BBBB")
-        logger.log(level: .debug, "BBBB")
-        logger.log(level: .info, "BBBB")
-        logger.log(level: .notice, "BBBB")
-        logger.log(level: .warning, "BBBB")
-        logger.log(level: .trace, "BBBB")
+        let message     = Message(
+                            payload:        Message.Payload.code(code: 1),
+                            arguments:      ["!123456" : "password"],
+                            actions:        ["email"   : "vzaman@tuparev.com"],
+                            formattingInfo: ["color"   : "#FF0000", "fontSize" : "14"])
         
-        print(logger.logLevel)
-        
-        
+
+        logger.log(level: .error, "example")
     }
 }
 

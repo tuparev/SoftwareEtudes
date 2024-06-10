@@ -8,14 +8,29 @@
 
 import Foundation
 
+public protocol MessageLog: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation {}
 
 //MARK: - Simple Message Implementation -
 
 /// `Message` is  simple and compact envelope to transfer information between sender and receiver through a channel in a efficient way
-public struct Message: Codable, Sendable {
+public struct Message: Codable, Sendable, MessageLog {
+    
+    public typealias StringLiteralType = String
 
+    private var value: String = ""
+    
     public static let sensitivityArgumentPrefix = "!"
     public static let privacyArgumentPrefix     = "!!"
+    
+    public var description: String {
+        // Also include arguments (with privacy concerns), actions, and formatting infos
+        let payloadStr        = payload.description
+        let actionsStr        = actions?       .description ?? "<nil>"
+        let argumentsStr      = arguments?     .description ?? "<nil>"
+        let formattingInfoStr = formattingInfo?.description ?? "<nil>"
+
+        return "Payload: \(payloadStr)\nArguments: \(argumentsStr)\nActions: \(actionsStr)\nFormattingInfo: \(formattingInfoStr)\n"
+    }
 
     /// `MessagePayload` encapsulate the actual body of the message.
     ///
@@ -45,6 +60,16 @@ public struct Message: Codable, Sendable {
         self.actions        = actions
         self.formattingInfo = formattingInfo
     }
+    
+    public init(stringLiteral value: String) {
+        self.value = value
+    
+        self.payload        = Message.Payload.code(code: 1)
+        self.arguments      = [:]
+        self.actions        = [:]
+        self.formattingInfo = [:]
+    }
+
 }
 
 //MARK: - Extensions -
@@ -56,17 +81,5 @@ extension Message.Payload: CustomStringConvertible {
             case .key(let key):   return "Key: \(key)"
             case .code(let code): return "Code: \(code)"
         }
-    }
-}
-
-extension Message: CustomStringConvertible {
-    public var description: String {
-        // Also include arguments (with privacy concerns), actions, and formatting infos
-        let payloadStr        = payload.description
-        let actionsStr        = actions?       .description ?? "<nil>"
-        let argumentsStr      = arguments?     .description ?? "<nil>"
-        let formattingInfoStr = formattingInfo?.description ?? "<nil>"
-
-        return "Payload: \(payloadStr)\nArguments: \(argumentsStr)\nActions: \(actionsStr)\nFormattingInfo: \(formattingInfoStr)\n"
     }
 }

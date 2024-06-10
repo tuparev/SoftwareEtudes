@@ -15,6 +15,9 @@
 #if canImport(Darwin)
 import Darwin
 #endif
+import SoftwareEtudesMessages
+
+public typealias EtudeMessage = SoftwareEtudesMessages.Message
 
 /// A `Logger` is the central type in `SwiftLog`. Its central function is to emit log messages using one of the methods
 /// corresponding to a log level.
@@ -96,7 +99,7 @@ extension Logger {
     ///            defaults to `#line`).
     @inlinable
     public func log(level: Logger.Level,
-                    _ message: @autoclosure () -> Logger.Message,
+                    _ message: @autoclosure () -> any MessageLog,
                     metadata: @autoclosure () -> Logger.Metadata? = nil,
                     source: @autoclosure () -> String? = nil,
                     file: String = #fileID, function: String = #function, line: UInt = #line) {
@@ -126,11 +129,19 @@ extension Logger {
     ///            defaults to `#line`).
     @inlinable
     public func log(level: Logger.Level,
-                    _ message: @autoclosure () -> Logger.Message,
+                    _ message: @autoclosure () -> any MessageLog,
                     metadata: @autoclosure () -> Logger.Metadata? = nil,
                     file: String = #fileID, function: String = #function, line: UInt = #line) {
         self.log(level: level, message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
     }
+    
+//    @inlinable
+//    public func log(level: Logger.Level,
+//                    _ message: @autoclosure () -> EtudeMessage,
+//                    metadata: @autoclosure () -> Logger.Metadata? = nil,
+//                    file: String = #fileID, function: String = #function, line: UInt = #line) {
+//        self.log(level: level, message(), metadata: metadata(), source: nil, file: file, function: function, line: line)
+//    }
 
     /// Get or set the log level configured for this `Logger`.
     ///
@@ -352,7 +363,7 @@ extension Logger {
     ///
     ///     logger.info("Hello \(world)")
     ///
-    public struct Message: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation {
+    public struct Message: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation, MessageLog {
         public typealias StringLiteralType = String
 
         private var value: String
@@ -500,7 +511,7 @@ public struct StreamLogHandler: LogHandler {
     }
 
     public func log(level: Logger.Level,
-                    message: Logger.Message,
+                    message: any MessageLog,
                     metadata explicitMetadata: Logger.Metadata?,
                     source: String,
                     file: String,

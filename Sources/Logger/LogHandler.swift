@@ -11,6 +11,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 //===----------------------------------------------------------------------===//
+import SoftwareEtudesMessages
 
 /// Please note that the above `LogHandler` will still pass the 'log level is a value' test above it iff the global log
 /// level has not been overridden. And most importantly it passes the requirement listed above: A change to the log
@@ -32,7 +33,7 @@ public protocol LogHandler: _SwiftLogSendableLogHandler {
     ///     - function: The function the log line was emitted from.
     ///     - line: The line the log message was emitted from.
     func log(level: Logger.Level,
-             message: Logger.Message,
+             message: any MessageLog,
              metadata: Logger.Metadata?,
              source: String,
              file: String,
