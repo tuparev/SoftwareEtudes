@@ -8,7 +8,11 @@
 
 import Foundation
 
-public protocol MessageLog: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation {}
+//MARK: - MessageLog protocol -
+
+public protocol MessageLog: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation {
+    var description: String { get }
+}
 
 //MARK: - Simple Message Implementation -
 
@@ -16,21 +20,10 @@ public protocol MessageLog: ExpressibleByStringLiteral, Equatable, CustomStringC
 public struct Message: Codable, Sendable, MessageLog {
     
     public typealias StringLiteralType = String
-
-    private var value: String = ""
     
     public static let sensitivityArgumentPrefix = "!"
     public static let privacyArgumentPrefix     = "!!"
     
-    public var description: String {
-        // Also include arguments (with privacy concerns), actions, and formatting infos
-        let payloadStr        = payload.description
-        let actionsStr        = actions?       .description ?? "<nil>"
-        let argumentsStr      = arguments?     .description ?? "<nil>"
-        let formattingInfoStr = formattingInfo?.description ?? "<nil>"
-
-        return "Payload: \(payloadStr)\nArguments: \(argumentsStr)\nActions: \(actionsStr)\nFormattingInfo: \(formattingInfoStr)\n"
-    }
 
     /// `MessagePayload` encapsulate the actual body of the message.
     ///
@@ -60,26 +53,58 @@ public struct Message: Codable, Sendable, MessageLog {
         self.actions        = actions
         self.formattingInfo = formattingInfo
     }
-    
-    public init(stringLiteral value: String) {
-        self.value = value
-    
-        self.payload        = Message.Payload.code(code: 1)
-        self.arguments      = [:]
-        self.actions        = [:]
-        self.formattingInfo = [:]
-    }
-
 }
 
 //MARK: - Extensions -
 
 extension Message.Payload: CustomStringConvertible {
     public var description: String {
-        //TODO: Also include arguments (with privacy concerns), actions, and formatting infos
         switch self {
             case .key(let key):   return "Key: \(key)"
             case .code(let code): return "Code: \(code)"
         }
     }
+}
+
+extension Message {
+    // Required for Equatable
+    public static func == (lhs: Message, rhs: Message) -> Bool {
+        return lhs.payload == rhs.payload && lhs.arguments == rhs.arguments && lhs.actions == rhs.actions && lhs.formattingInfo == rhs.formattingInfo
+    }
+}
+
+extension Message {
+    // Required initializer for ExpressibleByStringInterpolation
+    public init(stringInterpolation: DefaultStringInterpolation) {
+        self.payload        = Message.Payload.code(code: 0)
+        self.arguments      = [:]
+        self.actions        = [:]
+        self.formattingInfo = [:]
+    }
+}
+
+extension Message {
+    // Required initializer for ExpressibleByStringLiteral
+    public init(stringLiteral value: StringLiteralType) {
+        self.payload        = Message.Payload.code(code: 0)
+        self.arguments      = [:]
+        self.actions        = [:]
+        self.formattingInfo = [:]
+    }
+}
+
+extension Message {
+    // Implementation of CustomStringConvertible
+    public var description: String {
+        let payloadStr        = payload.description
+        let actionsStr        = actions?       .description ?? "<nil>"
+        let argumentsStr      = arguments?     .description ?? "<nil>"
+        let formattingInfoStr = formattingInfo?.description ?? "<nil>"
+        
+        return "Payload: \(payloadStr)\nArguments: \(argumentsStr)\nActions: \(actionsStr)\nFormattingInfo: \(formattingInfoStr)\n"
+    }
+}
+
+extension String: MessageLog {
+    public var description: String { return self }
 }
