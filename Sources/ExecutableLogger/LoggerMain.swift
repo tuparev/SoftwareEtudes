@@ -1,5 +1,5 @@
 //
-//  MessageUsage.swift
+//  LoggerMain.swift
 //
 //
 //  Created by Zhanna Hakobyan on 05.06.24.
@@ -15,9 +15,9 @@ struct Main {
         let logger  = Logger(label: "")
         let message = Message(
                         payload:        Message.Payload.code(code: 1),
-                        arguments:      ["!123456" : "password"],
-                        actions:        ["email"   : "vzaman@tuparev.com"],
-                        formattingInfo: ["color"   : "#FF0000", "fontSize" : "14"])
+                        arguments:      ["password" : "!123456"],
+                        actions:        ["email"    : "test@test.com"],
+                        formattingInfo: ["color"    : "#FF0000", "fontSize" : "14"])
         
         logger.log(level: .error, message)
         logger.log(level: .error, "Example")

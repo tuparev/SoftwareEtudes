@@ -363,7 +363,7 @@ extension Logger {
     ///
     ///     logger.info("Hello \(world)")
     ///
-    public struct Message: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation, MessageLog {
+    public struct Message: MessageLog {
         public typealias StringLiteralType = String
 
         private var value: String
