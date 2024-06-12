@@ -20,10 +20,11 @@ let package = Package(
         .target(name: "SoftwareEtudesUtilities",               dependencies: [], path: "Sources/Utilities"),
         .target(name: "SoftwareEtudesMessages",                dependencies: [], path: "Sources/Messages"),
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
-        .target(name: "SoftwareEtudesLogger",                  dependencies: ["SoftwareEtudesMessages"], path: "Sources/Logger"),
+        .target(name: "SoftwareEtudesLogger",                  dependencies: [], path: "Sources/Logger"),
 
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
         .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
+        .testTarget(name: "SoftwareEtudesLoggerTests",                 dependencies: ["SoftwareEtudesLogger"],                path: "Tests/Logger")
     ]
 )

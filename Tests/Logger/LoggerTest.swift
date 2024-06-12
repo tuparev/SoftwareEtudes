@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import SoftwareEtudesLogger
+@testable import SoftwareEtudesLogger
 
 final class LoggerTests: XCTestCase {
    
