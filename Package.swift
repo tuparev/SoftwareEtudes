@@ -12,8 +12,7 @@ let package = Package(
         .library(name: "SoftwareEtudesUtilities",               targets: ["SoftwareEtudesUtilities"]),
         .library(name: "SoftwareEtudesMessages",                targets: ["SoftwareEtudesMessages"]),
         .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
-        .library(name: "SoftwareEtudesLogger",                  targets: ["SoftwareEtudesLogger"]),
-        .executable(name: "SoftwareEtudesExecutableLogger",            targets: ["SoftwareEtudesExecutableLogger"])
+        .library(name: "SoftwareEtudesLogger",                  targets: ["SoftwareEtudesLogger"])
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -22,7 +21,6 @@ let package = Package(
         .target(name: "SoftwareEtudesMessages",                dependencies: [], path: "Sources/Messages"),
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
         .target(name: "SoftwareEtudesLogger",                  dependencies: ["SoftwareEtudesMessages"], path: "Sources/Logger"),
-        .executableTarget(name: "SoftwareEtudesExecutableLogger",     dependencies: ["SoftwareEtudesMessages", "SoftwareEtudesLogger"], path: "Sources/ExecutableLogger"),
 
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
