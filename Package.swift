@@ -25,6 +25,6 @@ let package = Package(
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
         .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
-        .testTarget(name: "SoftwareEtudesLoggerTests",                 dependencies: ["SoftwareEtudesLogger"],                path: "Tests/Logger")
+        .testTarget(name: "SoftwareEtudesLoggerTests",                  dependencies: ["SoftwareEtudesLogger", "SoftwareEtudesMessages"],                path: "Tests/Logger")
     ]
 )

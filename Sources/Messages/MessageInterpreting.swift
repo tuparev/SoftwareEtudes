@@ -23,6 +23,8 @@ public class AbstractMessageInterpreter: MessageInterpreting {
         self.environment = environment
     }
 
-    public func interpret(_ message: Message) {}
+    public func interpret(_ message: Message) {
+        print(message)
+    }
 
 }
