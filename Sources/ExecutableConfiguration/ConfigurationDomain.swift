@@ -31,11 +31,13 @@ public enum ConfigurationDomainHierarchyType: Int, Codable, CaseIterable {
 public protocol ConfigurationDomainProtocol: Identifiable {
     var domainType: ConfigurationDomainHierarchyType { get }
 
+//    func allKeys() -> [String]
+
     func configurationItemFor(key: String) -> (any ConfigurationItemProtocol)?
     mutating func setConfiguration(item: any ConfigurationItemProtocol, for key: String)
 }
 
-public struct ConfigurationDomain: ConfigurationDomainProtocol {
+open class ConfigurationDomain: ConfigurationDomainProtocol {
     public var id: UUID
     public var domainType: ConfigurationDomainHierarchyType
     public var name: String?
@@ -48,8 +50,8 @@ public struct ConfigurationDomain: ConfigurationDomainProtocol {
         self.configurationItems = configurationItems!
     }
 
-    public func configurationItemFor(key: String) -> (ConfigurationItemProtocol)?           { configurationItems[key] }
-    public mutating func setConfiguration(item: ConfigurationItemProtocol, for key: String) { configurationItems[key] = item }
+    public func configurationItemFor(key: String) -> (ConfigurationItemProtocol)?  { configurationItems[key] }
+    public func setConfiguration(item: ConfigurationItemProtocol, for key: String) { configurationItems[key] = item }
 
     //MARK: - Private stuff -
     private var configurationItems: [String : ConfigurationItemProtocol]
