@@ -28,8 +28,8 @@ public struct Message: Codable, Sendable, MessageLog {
     /// `MessagePayload` is either a code (Int value) or a key (String value). It is used by a type conforming to the  ``MessageInterpreting`` protocol  to  produce a human readable
     ///  message, possibly using the arguments. But `MessagePayload` could be also used to generate complex structures like XML or JSON by the message receiver..
     public enum Payload: Codable, Sendable, Comparable {
-        case key(key: String = "")
-        case code(code: Int = 0)
+        case key(key: String)
+        case code(code: Int)
     }
 
     /// `payload` is the actual body of the message
@@ -74,7 +74,7 @@ extension Message {
 extension Message {
     // Required initializer for ExpressibleByStringInterpolation
     public init(stringInterpolation: DefaultStringInterpolation) {
-        self.payload        = Message.Payload.code()
+        self.payload        = Message.Payload.code(code: 0)
         self.arguments      = [:]
         self.actions        = [:]
         self.formattingInfo = [:]
@@ -84,7 +84,7 @@ extension Message {
 extension Message {
     // Required initializer for ExpressibleByStringLiteral
     public init(stringLiteral value: StringLiteralType) {
-        self.payload        = Message.Payload.code()
+        self.payload        = Message.Payload.code(code: 0)
         self.arguments      = [:]
         self.actions        = [:]
         self.formattingInfo = [:]
