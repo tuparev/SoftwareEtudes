@@ -10,9 +10,7 @@ import Foundation
 
 //MARK: - MessageLog protocol -
 
-public protocol MessageLog: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation {
-    var description: String { get }
-}
+public protocol MessageLog: ExpressibleByStringLiteral, Equatable, CustomStringConvertible, ExpressibleByStringInterpolation { }
 
 //MARK: - Simple Message Implementation -
 
