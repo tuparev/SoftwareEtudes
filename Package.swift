@@ -17,14 +17,14 @@ let package = Package(
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
-        .target(name: "SoftwareEtudesUtilities",               dependencies: [], path: "Sources/Utilities"),
-        .target(name: "SoftwareEtudesMessages",                dependencies: [], path: "Sources/Messages"),
-        .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
-        .target(name: "SoftwareEtudesLogger",                  dependencies: [], path: "Sources/Logger"),
+        .target(name: "SoftwareEtudesUtilities",               dependencies: [],                         path: "Sources/Utilities"),
+        .target(name: "SoftwareEtudesMessages",                dependencies: [],                         path: "Sources/Messages"),
+        .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [],                         path: "Sources/ExecutableConfiguration"),
+        .target(name: "SoftwareEtudesLogger",                  dependencies: ["SoftwareEtudesMessages"], path: "Sources/Logger"),
 
-        .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
-        .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                path: "Tests/Messages"),
-        .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
-        .testTarget(name: "SoftwareEtudesLoggerTests",                  dependencies: ["SoftwareEtudesLogger", "SoftwareEtudesMessages"],                path: "Tests/Logger")
+        .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],                        path: "Tests/Utilities"),
+        .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                         path: "Tests/Messages"),
+        .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"],          path: "Tests/ExecutableConfiguration"),
+        .testTarget(name: "SoftwareEtudesLoggerTests",                  dependencies: ["SoftwareEtudesLogger", "SoftwareEtudesMessages"], path: "Tests/Logger")
     ]
 )
