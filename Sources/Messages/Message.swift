@@ -74,7 +74,7 @@ extension Message {
 }
 
 extension Message {
-    // Required initializer for ExpressibleByStringInterpolation
+    // Required initialiser for ExpressibleByStringInterpolation
     public init(stringInterpolation: DefaultStringInterpolation) {
         self.payload        = Message.Payload.code()
         self.arguments      = [:]
@@ -84,7 +84,7 @@ extension Message {
 }
 
 extension Message {
-    // Required initializer for ExpressibleByStringLiteral
+    // Required initialiser for ExpressibleByStringLiteral
     public init(stringLiteral value: StringLiteralType) {
         self.payload        = Message.Payload.code()
         self.arguments      = [:]
