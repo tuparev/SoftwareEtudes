@@ -21,6 +21,7 @@ Most of the sources in the `Utility` module are ready to be used. Please note, t
 #### TypeNameDescribable
 #### URL+BugFixes
 #### URL+CodableExtensions
+#### URLSession+Additions
 
 ### ConfigurationEnvironment
 The sources in this module are very preliminary and so far only as a starting point for brainstorming. The should NOT be used in real projects and there will be NO backwards compatibility!
