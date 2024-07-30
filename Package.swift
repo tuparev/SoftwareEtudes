@@ -14,13 +14,19 @@ let package = Package(
         .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
         .library(name: "SoftwareEtudesLogger",                  targets: ["SoftwareEtudesLogger"])
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
+    ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(name: "SoftwareEtudesUtilities",               dependencies: [],                         path: "Sources/Utilities"),
         .target(name: "SoftwareEtudesMessages",                dependencies: [],                         path: "Sources/Messages"),
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [],                         path: "Sources/ExecutableConfiguration"),
-        .target(name: "SoftwareEtudesLogger",                  dependencies: ["SoftwareEtudesMessages"], path: "Sources/Logger"),
+        .target(name: "SoftwareEtudesLogger",                  dependencies: [
+            "SoftwareEtudesMessages",
+            .product(name: "Logging", package: "swift-log"),
+        ], path: "Sources/Logger"),
 
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],                        path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesMessagesTests",                dependencies: ["SoftwareEtudesMessages"],                         path: "Tests/Messages"),
