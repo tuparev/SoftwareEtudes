@@ -49,6 +49,7 @@ Dear users of this Swift Package, contributions are very welcome and you will be
 - `TypeNameDescribable` needs (usage) documentation.
 - `URL+BugFixes` needs tests.
 - `URL+CodableExtensions` needs documentation and tests
+- `PrettyJson` needs more tests and documentation. A working playground example will be perfect.
 
 ### Functionality enhancements
 

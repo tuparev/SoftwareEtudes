@@ -59,7 +59,7 @@ public class PrettyJSONEncoder: JSONEncoder {
 ///
 /// **Note: ** Current implementation is tested only with relatively simple flat types. Perhaps for complex and nested types we will need to implement something
 /// using macros, but this is a project for the future.
-protocol JSONable {
+public protocol JSONable {
     associatedtype `Type`: Decodable
     
     func toJson()                          -> String?
@@ -67,7 +67,7 @@ protocol JSONable {
 }
 
 /// The extension implements `fromJSON` method  of the `JSONable` protocol
-extension JSONable {
+public extension JSONable {
 
     /// Converts the JSON string into `Type` instance
     ///
@@ -88,7 +88,7 @@ extension JSONable {
 /// human readable string
 ///
 /// **Note: ** to use this functionality you need to use `PrettyJSONEncoder` instead of the standard `JSONEncoder`.
-extension Encodable where Self: JSONable {
+public extension Encodable where Self: JSONable {
     /// Converts the instance to json string
     func toJson() -> String? {
         let encoder = PrettyJSONEncoder()
@@ -98,4 +98,18 @@ extension Encodable where Self: JSONable {
             return String(data: data, encoding: .utf8)
         } catch { return nil }
     }
+}
+
+public struct RemoteUncachedJSONContent<T: Decodable> {
+    public init(url: URL) { self.url = url }
+
+    private var contents: T {
+        get async throws {
+            let (data, _) = try await URLSession.nonCachingSession.data(from: url)
+
+            return try PrettyJSONDecoder().decode(T.self, from: data)
+        }
+    }
+
+    private let url: URL
 }
