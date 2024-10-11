@@ -9,13 +9,14 @@ import Foundation
 import Logging
 
 public struct SimpleConsoleLogHandler: LogHandler {
-    public subscript(metadataKey _: String) -> Logging.Logger.Metadata.Value? {
+    
+    
+    public subscript(metadataKey key: String) -> Logger.Metadata.Value? {
         get {
-            // ...
-            return nil
+            return metadata[key]
         }
         set(newValue) {
-            // ...
+            metadata[key] = newValue
         }
     }
     
@@ -23,5 +24,8 @@ public struct SimpleConsoleLogHandler: LogHandler {
     
     public var logLevel: Logging.Logger.Level
     
-
+    public init(label: String) {
+        self.metadata = [:]
+        self.logLevel = .info
+    }
 }
