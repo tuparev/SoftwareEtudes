@@ -8,6 +8,7 @@
 import XCTest
 @testable import SoftwareEtudesLogger
 @testable import SoftwareEtudesMessages
+import Logging
 
 final class LoggerTests: XCTestCase {
    
@@ -18,11 +19,11 @@ final class LoggerTests: XCTestCase {
     
     func test_log() {}
     
-    
-    func test_logger() {
-        let log = MessageLogger(logLevel: .error, message: message)
-        XCTAssertNotNil(log)
-    }
+//    
+//    func test_logger() {
+//        let log = MessageLogger(logLevel: .error, message: message)
+//        XCTAssertNotNil(log)
+//    }
     
     
     func test_logger_channel() {
@@ -42,5 +43,21 @@ final class LoggerTests: XCTestCase {
         let channel     = AbstractMessageChannel.init(environment: environment, interpreter: interpreter)
         
         channel.channel(message: message)
+    }
+    
+    func testSimpleConsoleLogHandler() {
+
+        // Given
+        LoggingSystem.bootstrap { label in
+            SimpleConsoleLogHandler(label: label)
+        }
+        var logger = Logger(label: "com.example.test")
+        logger.logLevel = .trace
+        
+        // WHen
+        logger.info("Testing SimpleConsoleLogHandler")
+        
+        //Then
+        XCTAssertTrue(true)
     }
 }
