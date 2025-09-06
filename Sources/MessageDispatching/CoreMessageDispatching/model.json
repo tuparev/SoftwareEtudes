@@ -1,0 +1,26 @@
+{
+    "nodes": [
+        {
+            "name": "AnisMessenger",
+            "isRoot": true,
+            "className": "Blah",
+            "type": "message_emiter",
+            "nextDispatchers": ["AnisFormatter"]
+        },
+        {
+            "name": "AnisFormatter",
+            "isRoot": false,
+            "type": "message_formatter",
+            "nextDispatchers": ["AnisInterpreter"]
+        },
+        {
+            "name": "AnisInterpreter",
+            "isRoot": false,
+            "type": "message_interpreter",
+            "nextDispatchers": [],
+            "atributes": {
+                "codeMappings": "file:///tmp/mappings.json"
+            }
+        }
+    ]
+}

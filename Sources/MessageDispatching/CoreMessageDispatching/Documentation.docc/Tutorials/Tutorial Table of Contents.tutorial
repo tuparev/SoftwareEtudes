@@ -1,0 +1,13 @@
+@Tutorials(name: "Message Dispatching") {
+    @Intro(title: "Learn Message Dispatching") {
+        Comprehensive guides for building message handling systems with the SoftwareEtudes framework.
+    }
+    
+    @Chapter(name: "Getting Started") {
+        Learn the fundamentals of message dispatching.
+        
+        @Image(source: "getting-started.png", alt: "Getting started with message dispatching")
+        
+        @TutorialReference(tutorial: "doc:MessageDispatchingGuide")
+    }
+}

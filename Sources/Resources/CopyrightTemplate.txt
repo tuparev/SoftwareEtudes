@@ -1,0 +1,19 @@
+//===----------------------------------------------------------------------===//
+//  $$$.swift
+//===----------------------------------------------------------------------===//
+//
+// This source file is part of the SoftwareEtudes open source project
+//
+// Copyright (c) 2020-2025 Tuparev Technologies and Friends
+// Licensed under MIT License Modern Variant
+//
+// See LICENSE for license information
+// See CONTRIBUTORS.md for the list of SoftwareEtudes contributors
+//
+// SPDX-License-Identifier: MIT-Modern-Variant
+//
+//===----------------------------------------------------------------------===//
+//
+//  Created by $$$ on DD/MM/YYYY.
+//
+

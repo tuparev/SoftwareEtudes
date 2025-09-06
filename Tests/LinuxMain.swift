@@ -11,3 +11,4 @@ tests += SimpleNotConfiguredParsingTests.allTests()
 tests += TimeIntervalUtilitiesTests.allTests()
 
 XCTMain(tests)
+

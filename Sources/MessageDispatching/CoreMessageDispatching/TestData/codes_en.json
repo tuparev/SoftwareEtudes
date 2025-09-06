@@ -1,0 +1,16 @@
+[
+    {
+        "code": 100,
+        "messageTemplates": {
+            "en": "Server Error: An unexpected error occurred.",
+            "fr": "Erreur du serveur : Une erreur inattendue est survenue."
+        }
+    },
+    {
+        "code": 200,
+        "messageTemplates": {
+            "en": "Service Unavailable: The server is currently overloaded.",
+            "fr": "Service indisponible : Le serveur est actuellement surchargé."
+        }
+    }
+]

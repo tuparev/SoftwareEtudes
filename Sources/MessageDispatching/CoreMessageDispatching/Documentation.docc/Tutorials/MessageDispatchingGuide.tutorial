@@ -1,0 +1,49 @@
+@Tutorial(time: 5) {
+    @Intro(title: "Getting Started with Message Dispatching") {
+        In this tutorial, you'll learn how to wire up the SoftwareEtudes message dispatching framework:
+        - Build a dispatcher graph from JSON
+        - Connect an interpreter for argument cleanup
+        - Send a message through the pipeline
+    }
+    
+    @Section(title: "Getting Started") {
+        @ContentAndMedia {
+            First, add your dispatcher configuration JSON (e.g. `dispatchers.json`) to your bundle.
+            This file defines named nodes, their `isRoot` status, and the `nextDispatchers` relationships.
+        }
+        
+        @Steps {
+            @Step {
+                Load your configuration.
+                
+                Create a `MessageDispatchingContext` from your JSON file URL:
+                
+                @Code(name: "LoadContext.swift", file: "LoadContext.swift")
+            }
+            
+            @Step {
+                Build the dispatcher graph.
+                
+                The context reads your nodes and wires parent → child links:
+                
+                @Code(name: "buildDispatchers()", file: "DispatchingContext+Build.swift")
+            }
+            
+            @Step {
+                Connect your interpreter.
+                
+                Instantiate the `AbstractMessageInterpreter` and set it as the root delegate:
+                
+                @Code(name: "ConnectInterpreter.swift", file: "ConnectInterpreter.swift")
+            }
+            
+            @Step {
+                Send a message.
+                
+                Finally, send a `Message` into the root dispatcher:
+                
+                @Code(name: "DispatchMessage.swift", file: "DispatchMessage.swift")
+            }
+        }
+    }
+}

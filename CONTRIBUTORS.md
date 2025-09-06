@@ -11,6 +11,7 @@ SoftwareEtudes project.
 
 ## Contributors
 
+- Ani Klekchyan - <a.klekchyan@tuparev.com>
 - Charles Parnot - <cparnot@tuparev.com> - @cparnot
 - Georg Tuparev - <gtupare@tuparev.com> - @tuparev
 - Hunter William Holland - <huholland.fl@gmail.com>

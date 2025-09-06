@@ -1,0 +1,16 @@
+[
+    {
+        "key": "logStart",
+        "messageTemplates": {
+            "en": "Logging initiated: System monitoring has started.",
+            "fr": "Démarrage de la journalisation : La surveillance du système a commencé."
+        }
+    },
+    {
+        "key": "logStop",
+        "messageTemplates": {
+            "en": "Logging terminated: System monitoring has stopped.",
+            "fr": "Arrêt de la journalisation : La surveillance du système est arrêtée."
+        }
+    }
+]

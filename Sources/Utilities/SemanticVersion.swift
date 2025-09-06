@@ -8,7 +8,7 @@
 
 import Foundation
 
-/// `SemanticVersion` is a simple type capturing the version of an app, module, framework, or other resource.
+/// `SemanticVersion` is a simple type capturing the version of an app, a module, a framework, or other resource.
 ///
 /// `SemanticVersion` struct encapsulates the basic versioning rules for software modules. One can use this
 /// implementation to access app version as defined in Info.plist. Because SemanticVersion implements the
@@ -209,5 +209,4 @@ extension SemanticVersion: Comparable {
 
         return false
     }
-
 }
