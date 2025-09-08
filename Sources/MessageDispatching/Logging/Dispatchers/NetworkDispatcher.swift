@@ -12,27 +12,43 @@ import SoftwareEtudesCoreMessageDispatching
 /// Supports batching, retry logic, and network connectivity monitoring.
 public final class NetworkDispatcher: MessageDispatching {
     
-    init(children: [MessageDispatching], dispatcherDelegate: (any SoftwareEtudesCoreMessageDispatching.MessageDispatchingDelegate)? = nil) {
-        self.children = children
-        self.dispatcherDelegate = dispatcherDelegate
-    }
-    
     // MARK: MessageDispatching
-    public var dispatcherDelegate: (any SoftwareEtudesCoreMessageDispatching.MessageDispatchingDelegate)?
+    public var dispatcherDelegate: MessageDispatchingDelegate?
     
+    public init(endpoint: URL) {
+        self.children        = []
+        self.endpoint        = endpoint
+        self.session         = URLSession.shared
+        self.batchSize       = 5
+        self.flushInterval   = 2.0
+        self.maxRetries      = 2
+        self.retryDelay      = 0.5
+        self.includeMetadata = false
+        self.customHeaders   = [:]
+    }
     
     public func nextDispatchers() -> [MessageDispatching] { return children }
     public func addToNextDispatchers(_ dispatcher: MessageDispatching) { children.append(dispatcher) }
-    public func removeFromNextDispatchers(_ dispatcher:MessageDispatching) {
+    public func removeFromNextDispatchers(_ dispatcher: MessageDispatching) {
         children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
     }
     public func removeAllFromNextDispatchers() { children.removeAll() }
     
-    public func handle(_ message: SoftwareEtudesCoreMessageDispatching.Message) async throws {
+    public func handle(_ message: Message) async throws {
         
+        for child in children {
+            try await child.handle(message)
+        }
     }
     
-    // MARK: MessageDispatching
+    // MARK: Private Properties
     private var children: [MessageDispatching]
-  
+    private let endpoint: URL
+    private let session: URLSession
+    private let batchSize: Int
+    private let flushInterval: Double
+    private let maxRetries: Int
+    private let retryDelay: Double
+    private let includeMetadata: Bool
+    private let customHeaders: [String: String]
 }

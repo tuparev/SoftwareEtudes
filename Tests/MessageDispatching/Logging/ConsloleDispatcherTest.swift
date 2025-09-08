@@ -11,7 +11,7 @@ import SoftwareEtudesCoreMessageDispatching
 import SoftwareEtudesLogging
 
 /// Test child dispatcher spy
-class ChildDispatcherSpy: MessageDispatching {
+fileprivate class ChildDispatcherSpy: MessageDispatching {
     var dispatcherDelegate: MessageDispatchingDelegate?
     private(set) var receivedMessages: [Message] = []
     private(set) var handleCallCount = 0
@@ -25,6 +25,28 @@ class ChildDispatcherSpy: MessageDispatching {
         receivedMessages.append(message)
         handleCallCount += 1
     }
+}
+
+/// Test delegate that can control message filtering
+fileprivate class DelegateSpy: MessageDispatchingDelegate {
+    
+    var shouldDispatchMessage: Bool  = true
+    var shouldDispatchPriority: Bool = true
+    var receivedMessages: [Message] = []
+    var receivedPriorities: [MessagePriority] = []
+    
+    func shouldDispatchMessage(_ message: Message) -> Bool {
+        receivedMessages.append(message)
+        return shouldDispatchMessage
+    }
+    
+    func shouldDispatchMessageWithPriority(_ priority: MessagePriority) -> Bool {
+        receivedPriorities.append(priority)
+        return shouldDispatchPriority
+    }
+    
+    func shouldDispatchSensitiveMessageArgument() -> Bool { true }
+    func shouldDispatchPrivateMessageArgument() -> Bool { true }
 }
 
 @Suite("ConsoleDispatcher Initializ=sation Tests")

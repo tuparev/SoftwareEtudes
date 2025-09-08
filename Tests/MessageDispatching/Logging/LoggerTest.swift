@@ -522,7 +522,7 @@ struct LoggerEdgeCasesTests {
 // MARK: - Helper Classes
     
 /// A simple test double that records every `handle(_:)` call.
-class DispatcherSpy: MessageDispatching {
+fileprivate class DispatcherSpy: MessageDispatching {
     
         var dispatcherDelegate: MessageDispatchingDelegate?
         private(set) var received: [Message] = []
@@ -540,7 +540,7 @@ class DispatcherSpy: MessageDispatching {
 }
 
 /// Test delegate that can control message filtering
-class DelegateSpy: MessageDispatchingDelegate {
+fileprivate class DelegateSpy: MessageDispatchingDelegate {
     
     var shouldDispatchMessage: Bool  = true
     var shouldDispatchPriority: Bool = true
