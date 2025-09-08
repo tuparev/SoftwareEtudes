@@ -19,21 +19,21 @@ public final class ConsoleDispatcher: MessageDispatching {
     /// - Parameters:
     ///   - template: A format string supporting {timestamp}, {date}, {time}, {level}, {message}, {code}, {thread}.
     ///   - priorities: The set of message priorities this dispatcher will print.
-    ///   - enableColors: Whether to use ANSI color codes. Auto-detects TTY by default.
+    ///   - enableColors: Whether to use ANSI colour codes. Auto-detects TTY by default.
     ///   - showFullMessage: Whether to show complete multi-line messages or just the first line.
-    ///   - customColors: Optional custom color mapping for priority levels.
+    ///   - customColors: Optional custom colour mapping for priority levels.
     ///
     public init(template: String = "[{timestamp}] [{level}] {message}",
                 priorities: Set<MessagePriority> = [.debug, .info, .normal, .low, .background, .high, .critical],
-                enableColors: Bool? = nil,
+                enableColours: Bool? = nil,
                 showFullMessage: Bool = false,
-                customColors: [MessagePriority: String]? = nil) {
+                customColours: [MessagePriority: String]? = nil) {
         self.template          = template
         self.children          = []
         self.allowedPriorities = priorities
         self.showFullMessage   = showFullMessage
-        self.enableColors      = enableColors ?? Self.shouldUseColors()
-        self.levelColors       = customColors ?? Self.defaultColors
+        self.enableColors      = enableColours ?? Self.shouldUseColors()
+        self.levelColors       = customColours ?? Self.defaultColors
     }
     
     public func nextDispatchers() -> [MessageDispatching] { children }
@@ -141,7 +141,7 @@ public final class ConsoleDispatcher: MessageDispatching {
         return formatter
     }()
     
-    /// Default ANSI color mapping.
+    /// Default ANSI colour mapping.
     private static let defaultColors: [MessagePriority: String] = [
         .debug:    "\u{001B}[0;36m", // cyan
         .info:     "\u{001B}[0;32m", // green
@@ -154,7 +154,7 @@ public final class ConsoleDispatcher: MessageDispatching {
     
     private static let resetColor = "\u{001B}[0;0m"
     
-    /// Auto-detect if colors should be used (TTY detection).
+    /// Auto-detect if colours should be used (TTY detection).
     private static func shouldUseColors() -> Bool {
         return isatty(STDOUT_FILENO) != 0
     }
