@@ -71,6 +71,83 @@ public final class NetworkDispatcher: MessageDispatching {
     // MARK: Private Methods
     
     private func flushMessages() async {
+        
+        let messagesToSend = messageBuffer
         messageBuffer.removeAll()
+        
+        // Skip if no messages
+        guard !messagesToSend.isEmpty else { return }
+        
+        // Create HTTP request
+        var request = URLRequest(url: endpoint)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Add custom headers
+        for (key, value) in customHeaders {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        
+        // Create JSON payload
+        let payload = createPayload(from: messagesToSend)
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        } catch {
+            print("NetworkDispatcher: Failed to serialise messages - \(error)")
+            return
+        }
+    }
+    
+    /// Creates a JSON payload from an array of messages for HTTP transmission.
+    ///
+    /// The resulting JSON structure:
+    /// ```json
+    /// {
+    ///   "messages": [
+    ///     {
+    ///       "payload": "Key: test",
+    ///       "priority": "INFO", 
+    ///       "timestamp": "2025-09-09T10:30:00Z",
+    ///       "arguments": {...},     // if includeMetadata = true
+    ///       "actions": {...},       // if includeMetadata = true
+    ///       "formattingInfo": {...} // if includeMetadata = true
+    ///     }
+    ///   ],
+    ///   "batchSize": 1,
+    ///   "timestamp": "2025-09-09T10:30:00Z"
+    /// }
+    /// ```
+    ///
+    /// - Parameter messages: Array of messages to include in the payload
+    /// - Returns: Dictionary suitable for JSON serialisation
+    private func createPayload(from messages: [Message]) -> [String: Any] {
+        
+        let messageData = messages.map { message in
+            var messageDict: [String: Any]        = [
+                "payload": message.payload.description,
+                "priority": message.priority.description,
+                "timestamp": ISO8601DateFormatter().string(from: Date())
+            ]
+            
+            if includeMetadata {
+                if let arguments                  = message.arguments {
+                    messageDict["arguments"]      = arguments
+                }
+                if let actions                    = message.actions {
+                    messageDict["actions"]        = actions
+                }
+                if let formattingInfo             = message.formattingInfo {
+                    messageDict["formattingInfo"] = formattingInfo
+                }
+            }
+            
+            return messageDict
+        }
+        
+        return [
+            "messages": messageData,
+            "batchSize": messages.count,
+            "timestamp": ISO8601DateFormatter().string(from: Date())
+        ]
     }
 }
