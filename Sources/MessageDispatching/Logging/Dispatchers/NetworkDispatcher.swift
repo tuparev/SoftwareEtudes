@@ -36,6 +36,21 @@ public final class NetworkDispatcher: MessageDispatching {
     
     public func handle(_ message: Message) async throws {
         
+        // 1) Top-level filters
+        if let del = dispatcherDelegate {
+            guard del.shouldDispatchMessage(message),
+                  del.shouldDispatchMessageWithPriority(message.priority)
+            else { return }
+        }
+        
+        // 2) Add message to buffer
+        messageBuffer.append(message)
+        
+        // 3) Check if we should flush (batch is full)
+        if messageBuffer.count >= batchSize {
+            await flushMessages()
+        }
+        
         for child in children {
             try await child.handle(message)
         }
@@ -51,4 +66,11 @@ public final class NetworkDispatcher: MessageDispatching {
     private let retryDelay: Double
     private let includeMetadata: Bool
     private let customHeaders: [String: String]
+    private var messageBuffer: [Message] = []
+    
+    // MARK: Private Methods
+    
+    private func flushMessages() async {
+        messageBuffer.removeAll()
+    }
 }
