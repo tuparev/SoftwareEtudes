@@ -24,8 +24,8 @@ private struct MockSubObject: Codable, JSONable {
     var subValue: String
 }
 
-final class JSONableTests: XCTestCase {
-    
+final class JSONAbleTests: XCTestCase {
+
     func test_decode_withValidJson() {
         let json   =  "{\n  \"value\" : \"test1\",\n  \"subObject\" : {\n  \"subValue\" : \"test2\"\n  }  \n}"
         let object = MockObject.fromJSON(json)
