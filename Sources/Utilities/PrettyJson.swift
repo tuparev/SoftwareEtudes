@@ -10,6 +10,18 @@
 
 import Foundation
 
+public enum DateFormatting: Sendable {
+    case iso8601
+    case dateAndTimeOnly            // e.g. "yyyy-MM-dd'T'HH:mm:ss"
+    case formatted(DateFormatter)
+}
+
+public enum CustomDateFormatting: String {
+    case dateAndTimeOnly = "yyyy-MM-dd'T'HH:mm:ss"
+}
+
+public var dateFormatterType = DateFormatting.iso8601
+
 // These are simple subclasses of the system provided JSON Decoder and Encoder
 // that require the dates to be in ISO8601 format and produce well formatted
 // and human readable JSON outputs.
@@ -17,7 +29,7 @@ import Foundation
 /// An extension of `JSONDecoder` that adds ISO8601 date conformance.
 ///
 ///  Most JSON data use ISO8601 dates. So, let's make it a default
-public class PrettyJSONDecoder: JSONDecoder, @unchecked Sendable {
+open class PrettyJSONDecoder: JSONDecoder, @unchecked Sendable {
 
     /// Ensures that dates are in ISO8601 format
     public override init() {
@@ -26,48 +38,66 @@ public class PrettyJSONDecoder: JSONDecoder, @unchecked Sendable {
         dateDecodingStrategy = .custom{ (decoder) -> Date in
             let container  = try decoder.singleValueContainer()
             let dateString = try container.decode(String.self)
-            let date       = PrettyJSONDecoder.polisDateFormatter.date(from: dateString)
+            var date: Date?
+            switch dateFormatterType {
+                case .iso8601:
+                    date = ISO8601DateFormatter().date(from: dateString)
+                case .dateAndTimeOnly:
+                    let customFormatter = DateFormatter()
+                    customFormatter.dateFormat = CustomDateFormatting.dateAndTimeOnly.rawValue
+                    date = customFormatter.date(from: dateString)
+               case .formatted(let formatter):
+                    let customFormatter = formatter
+                    date = customFormatter.date(from: dateString)
+            }
 
             if let date = date { return date }
             else               { throw DecodingError.dataCorruptedError(in: container, debugDescription: "Date values must be ISO8601 formatted") }
         }
     }
-
-    /// This date formatter should be used for all Pretty JSON data
-    private static let polisDateFormatter = ISO8601DateFormatter()
-
 }
 
 /// An extension of `JSONEncoder` that adds ISO8601 date conformance and produces human readable
 /// JSON files.
-public class PrettyJSONEncoder: JSONEncoder, @unchecked Sendable {
+open class PrettyJSONEncoder: JSONEncoder, @unchecked Sendable {
 
     /// Ensures that dates are in ISO8601 format and the JSON files are human readable
     public override init() {
         super.init()
 
-        self.dateEncodingStrategy = .iso8601
-        self.outputFormatting     = .prettyPrinted
+        switch dateFormatterType {
+            case .iso8601:
+                self.dateEncodingStrategy = .iso8601
+            case .dateAndTimeOnly:
+                let customFormatter = DateFormatter()
+                customFormatter.dateFormat = CustomDateFormatting.dateAndTimeOnly.rawValue
+                self.dateEncodingStrategy = .formatted(customFormatter)
+            case .formatted(let formatter):
+                let customFormatter = formatter
+                self.dateEncodingStrategy = .formatted(customFormatter)
+        }
+        self.outputFormatting = .prettyPrinted
     }
 }
 
 
-/// `JSONable` is protocol for extending system provided JSON Decoder and Encoder to make it easier to convert a type to ``String`` or create an instance of
+/// `JSONAble` is protocol for extending system provided JSON Decoder and Encoder to make it easier to convert a type to ``String`` or create an instance of
 /// a type from ``String``
 ///
 /// These two operations are very common and we wonder why the standard ``Codable`` implementation does not include them.
 ///
 /// **Note: ** Current implementation is tested only with relatively simple flat types. Perhaps for complex and nested types we will need to implement something
 /// using macros, but this is a project for the future.
-public protocol JSONable {
+public protocol JSONAble {
     associatedtype `Type`: Decodable
     
     func toJson()                          -> String?
     static func fromJSON(_ string: String) -> `Type`?
 }
 
-/// The extension implements `fromJSON` method  of the `JSONable` protocol
-public extension JSONable {
+/// The extension implements `fromJSON` method  of the `JSONA
+/// ble` protocol
+public extension JSONAble {
 
     /// Converts the JSON string into `Type` instance
     ///
@@ -88,7 +118,7 @@ public extension JSONable {
 /// human readable string
 ///
 /// **Note: ** to use this functionality you need to use `PrettyJSONEncoder` instead of the standard `JSONEncoder`.
-public extension Encodable where Self: JSONable {
+public extension Encodable where Self: JSONAble {
     /// Converts the instance to json string
     func toJson() -> String? {
         let encoder = PrettyJSONEncoder()

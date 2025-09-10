@@ -11,14 +11,14 @@ import Foundation
 import XCTest
 @testable import SoftwareEtudesUtilities
 
-private struct MockObject: Codable, JSONable {
+private struct MockObject: Codable, JSONAble {
     typealias `Type` = MockObject
     
     var value     : String
     var subObject : MockSubObject
 }
 
-private struct MockSubObject: Codable, JSONable {
+private struct MockSubObject: Codable, JSONAble {
     typealias `Type` = MockSubObject
     
     var subValue: String
