@@ -132,3 +132,127 @@ struct FileDispatcherInitialisationTests {
         }
     }
 }
+
+@Suite("FileDispatcher Child Dispatcher Tests")
+struct FileDispatcherChildDispatcherTests {
+    
+    /// Helper to create a temporary file URL for testing
+    private func createTempFileURL() -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        return tempDir.appendingPathComponent("test_log_\(UUID().uuidString).log")
+    }
+    
+    /// Helper to clean up test files
+    private func cleanupFile(at url: URL) {
+        try? FileManager.default.removeItem(at: url)
+    }
+    
+    @Test("FileDispatcher initialises with no children")
+    func initializesWithNoChildren() throws {
+        
+        // Given
+        let fileURL    = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher = try FileDispatcher(fileURL: fileURL)
+        
+        // When
+        let children   = dispatcher.nextDispatchers()
+        
+        // Then
+        #expect(children.isEmpty)
+    }
+    
+    @Test("FileDispatcher can add child dispatchers")
+    func addChildDispatchers() throws {
+        
+        // Given
+        let fileURL    = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher = try FileDispatcher(fileURL: fileURL)
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
+        
+        // When
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        // Then
+        let children = dispatcher.nextDispatchers()
+        #expect(children.count == 2)
+    }
+    
+    @Test("FileDispatcher can remove specific child dispatcher")
+    func removeSpecificChildDispatcher() throws {
+        
+        // Given
+        let fileURL    = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher = try FileDispatcher(fileURL: fileURL)
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
+        
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        // When
+        dispatcher.removeFromNextDispatchers(child1)
+        
+        // Then
+        let children   = dispatcher.nextDispatchers()
+        #expect(children.count == 1)
+    }
+    
+    @Test("FileDispatcher can remove all child dispatchers")
+    func removeAllChildDispatchers() throws {
+        
+        // Given
+        let fileURL    = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher = try FileDispatcher(fileURL: fileURL)
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
+        
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        // When
+        dispatcher.removeAllFromNextDispatchers()
+        
+        // Then
+        let children   = dispatcher.nextDispatchers()
+        #expect(children.isEmpty)
+    }
+    
+    @Test("FileDispatcher forwards messages to child dispatchers")
+    func forwardMessagesToChildDispatchers() async throws {
+        
+        // Given
+        let fileURL    = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher = try FileDispatcher(fileURL: fileURL)
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
+        
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        let message    = Message(payload: .key(key: "Forward test"), priority: .info)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        #expect(child1.handleCallCount == 1)
+        #expect(child2.handleCallCount == 1)
+        #expect(child1.receivedMessages.count == 1)
+        #expect(child2.receivedMessages.count == 1)
+        #expect(child1.receivedMessages.first?.description == message.description)
+        #expect(child2.receivedMessages.first?.description == message.description)
+    }
+}
