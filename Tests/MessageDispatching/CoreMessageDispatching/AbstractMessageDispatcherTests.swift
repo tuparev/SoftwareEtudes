@@ -12,8 +12,8 @@ import Testing
 @Suite("AbstractMessageDispatcher Tests")
 struct AbstractMessageDispatcherTests {
     
-    /// Spy delegate controlling global and priority filters.
-    class DelegateSpy: MessageDispatchingDelegate {
+    /// Example delegate controlling global and priority filters.
+    class DelegateExample: MessageDispatchingDelegate {
         var allowMessage = true
         var allowPriority = true
         func shouldDispatchMessage(_ message: Message) -> Bool { allowMessage }
@@ -22,8 +22,8 @@ struct AbstractMessageDispatcherTests {
         func shouldDispatchPrivateMessageArgument() -> Bool { true }
     }
     
-    /// Spy dispatcher to capture forwarded messages.
-    class DispatcherSpy: MessageDispatching {
+    /// Example dispatcher to capture forwarded messages.
+    class DispatcherExample: MessageDispatching {
         var dispatcherDelegate: MessageDispatchingDelegate?
         private(set) var handled: [Message] = []
         func nextDispatchers() -> [any MessageDispatching] { [] }
@@ -39,11 +39,11 @@ struct AbstractMessageDispatcherTests {
     @Test
     func handle_dropsWhenDelegateRejectsMessage() async throws {
         let dispatcher = AbstractMessageDispatcher(name: "")
-        let delegate = DelegateSpy()
+        let delegate = DelegateExample()
         delegate.allowMessage = false
         dispatcher.dispatcherDelegate = delegate
         
-        let child = DispatcherSpy()
+        let child = DispatcherExample()
         dispatcher.addToNextDispatchers(child)
         
         let message = Message(payload: .key(key: "test"))
@@ -56,11 +56,11 @@ struct AbstractMessageDispatcherTests {
     @Test
     func handle_dropsWhenDelegateRejectsByPriority() async throws {
         let dispatcher = AbstractMessageDispatcher(name: "")
-        let delegate = DelegateSpy()
+        let delegate = DelegateExample()
         delegate.allowPriority = false
         dispatcher.dispatcherDelegate = delegate
         
-        let child = DispatcherSpy()
+        let child = DispatcherExample()
         dispatcher.addToNextDispatchers(child)
         
         let message = Message(payload: .key(key: "test"), priority: .high)
@@ -72,10 +72,10 @@ struct AbstractMessageDispatcherTests {
     @Test
     func handle_forwardsWhenDelegateAccepts() async throws {
         let dispatcher = AbstractMessageDispatcher(name: "")
-        let delegate = DelegateSpy()
+        let delegate = DelegateExample()
         dispatcher.dispatcherDelegate = delegate
         
-        let child = DispatcherSpy()
+        let child = DispatcherExample()
         dispatcher.addToNextDispatchers(child)
         
         let message = Message(payload: .key(key: "test"), priority: .normal)

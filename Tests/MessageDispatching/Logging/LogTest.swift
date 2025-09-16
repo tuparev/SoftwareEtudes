@@ -279,7 +279,7 @@ struct LogMetadataSerialisationTests {
 struct LogDispatchTests {
     
     /// Test dispatcher that records handled messages
-    class DispatcherSpy: MessageDispatching {
+    class DispatcherExample: MessageDispatching {
         var dispatcherDelegate: MessageDispatchingDelegate?
         private(set) var handledMessages: [Message] = []
         private(set) var handleCallCount = 0
@@ -296,7 +296,7 @@ struct LogDispatchTests {
     }
     
     /// Test delegate that can control message filtering
-    class DelegateSpy: MessageDispatchingDelegate {
+    class DelegateExample: MessageDispatchingDelegate {
         var shouldDispatchMessage: Bool = true
         var shouldDispatchPriority: Bool = true
         
@@ -329,7 +329,7 @@ struct LogDispatchTests {
         // Given
         let message = Message(payload: .key(key: "test"), priority: .info)
         let log = Log(message: message, priority: .info)
-        let dispatcher = DispatcherSpy()
+        let dispatcher = DispatcherExample()
         
         // When
         await log.dispatch(to: [dispatcher])
@@ -345,9 +345,9 @@ struct LogDispatchTests {
         // Given
         let message = Message(payload: .key(key: "test"), priority: .info)
         let log = Log(message: message, priority: .info)
-        let dispatcher1 = DispatcherSpy()
-        let dispatcher2 = DispatcherSpy()
-        let dispatcher3 = DispatcherSpy()
+        let dispatcher1 = DispatcherExample()
+        let dispatcher2 = DispatcherExample()
+        let dispatcher3 = DispatcherExample()
         
         // When
         await log.dispatch(to: [dispatcher1, dispatcher2, dispatcher3])
@@ -367,8 +367,8 @@ struct LogDispatchTests {
         // Given
         let message = Message(payload: .key(key: "test"), priority: .info)
         let log = Log(message: message, priority: .info)
-        let dispatcher = DispatcherSpy()
-        let delegate = DelegateSpy()
+        let dispatcher = DispatcherExample()
+        let delegate = DelegateExample()
         delegate.shouldDispatchMessage = false
         dispatcher.dispatcherDelegate = delegate
         
@@ -385,8 +385,8 @@ struct LogDispatchTests {
         // Given
         let message = Message(payload: .key(key: "test"), priority: .high)
         let log = Log(message: message, priority: .high)
-        let dispatcher = DispatcherSpy()
-        let delegate = DelegateSpy()
+        let dispatcher = DispatcherExample()
+        let delegate = DelegateExample()
         delegate.shouldDispatchPriority = false
         dispatcher.dispatcherDelegate = delegate
         
@@ -403,7 +403,7 @@ struct LogDispatchTests {
         // Given
         let message = Message(payload: .key(key: "test"), priority: .info)
         let log = Log(message: message, priority: .info)
-        let dispatcher = DispatcherSpy()
+        let dispatcher = DispatcherExample()
         dispatcher.dispatcherDelegate = nil
         
         // When
@@ -420,13 +420,13 @@ struct LogDispatchTests {
         let message                             = Message(payload: .key(key: "test"), priority: .info)
         let log                                 = Log(message: message, priority: .info)
         
-        let allowingDispatcher                  = DispatcherSpy()
-        let allowingDelegate                    = DelegateSpy()
+        let allowingDispatcher                  = DispatcherExample()
+        let allowingDelegate                    = DelegateExample()
         allowingDelegate.shouldDispatchMessage  = true
         allowingDispatcher.dispatcherDelegate   = allowingDelegate
         
-        let rejectingDispatcher                 = DispatcherSpy()
-        let rejectingDelegate                   = DelegateSpy()
+        let rejectingDispatcher                 = DispatcherExample()
+        let rejectingDelegate                   = DelegateExample()
         rejectingDelegate.shouldDispatchMessage = false
         rejectingDispatcher.dispatcherDelegate  = rejectingDelegate
         

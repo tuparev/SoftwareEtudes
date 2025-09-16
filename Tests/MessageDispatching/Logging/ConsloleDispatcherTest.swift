@@ -10,11 +10,11 @@ import Testing
 import SoftwareEtudesCoreMessageDispatching
 import SoftwareEtudesLogging
 
-/// Test child dispatcher spy
-fileprivate class ChildDispatcherSpy: MessageDispatching {
+/// Test child dispatcher example
+fileprivate class ChildDispatcherExample: MessageDispatching {
     var dispatcherDelegate: MessageDispatchingDelegate?
     private(set) var receivedMessages: [Message] = []
-    private(set) var handleCallCount = 0
+    private(set) var handleCallCount             = 0
     
     func nextDispatchers() -> [MessageDispatching] { [] }
     func addToNextDispatchers(_ dispatcher: MessageDispatching) { }
@@ -28,11 +28,11 @@ fileprivate class ChildDispatcherSpy: MessageDispatching {
 }
 
 /// Test delegate that can control message filtering
-fileprivate class DelegateSpy: MessageDispatchingDelegate {
+fileprivate class DelegateExample: MessageDispatchingDelegate {
     
-    var shouldDispatchMessage: Bool  = true
-    var shouldDispatchPriority: Bool = true
-    var receivedMessages: [Message] = []
+    var shouldDispatchMessage: Bool           = true
+    var shouldDispatchPriority: Bool          = true
+    var receivedMessages: [Message]           = []
     var receivedPriorities: [MessagePriority] = []
     
     func shouldDispatchMessage(_ message: Message) -> Bool {
@@ -84,8 +84,8 @@ struct ConsoleDispatcherChildDispatcherTests {
         
         // Given
         let dispatcher = ConsoleDispatcher()
-        let child1     = ChildDispatcherSpy()
-        let child2     = ChildDispatcherSpy()
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
         
         // When
         dispatcher.addToNextDispatchers(child1)
@@ -101,8 +101,8 @@ struct ConsoleDispatcherChildDispatcherTests {
         
         // Given
         let dispatcher = ConsoleDispatcher()
-        let child1     = ChildDispatcherSpy()
-        let child2     = ChildDispatcherSpy()
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
         
         dispatcher.addToNextDispatchers(child1)
         dispatcher.addToNextDispatchers(child2)
@@ -120,8 +120,8 @@ struct ConsoleDispatcherChildDispatcherTests {
         
         // Given
         let dispatcher = ConsoleDispatcher()
-        let child1     = ChildDispatcherSpy()
-        let child2     = ChildDispatcherSpy()
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
         
         dispatcher.addToNextDispatchers(child1)
         dispatcher.addToNextDispatchers(child2)
@@ -139,8 +139,8 @@ struct ConsoleDispatcherChildDispatcherTests {
         
         // Given
         let dispatcher = ConsoleDispatcher()
-        let child1     = ChildDispatcherSpy()
-        let child2     = ChildDispatcherSpy()
+        let child1     = ChildDispatcherExample()
+        let child2     = ChildDispatcherExample()
         
         dispatcher.addToNextDispatchers(child1)
         dispatcher.addToNextDispatchers(child2)
@@ -168,7 +168,7 @@ struct ConsoleDispatcherDelegationTests {
     func respectDelegateMessageFiltering() async throws {
         
         // Given
-        let delegate                   = DelegateSpy()
+        let delegate                   = DelegateExample()
         delegate.shouldDispatchMessage = false
         
         let dispatcher                 = ConsoleDispatcher()
@@ -189,7 +189,7 @@ struct ConsoleDispatcherDelegationTests {
     func respectDelegatePriorityFiltering() async throws {
         
         // Given
-        let delegate                    = DelegateSpy()
+        let delegate                    = DelegateExample()
         delegate.shouldDispatchPriority = false
         
         let dispatcher                  = ConsoleDispatcher()
@@ -210,7 +210,7 @@ struct ConsoleDispatcherDelegationTests {
     func handleMessagesWhenDelegateAllows() async throws {
         
         // Given
-        let delegate                    = DelegateSpy()
+        let delegate                    = DelegateExample()
         delegate.shouldDispatchMessage  = true
         delegate.shouldDispatchPriority = true
         
