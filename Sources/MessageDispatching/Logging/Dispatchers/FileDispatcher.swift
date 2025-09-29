@@ -193,8 +193,10 @@ public final class FileDispatcher: MessageDispatching {
     }
     
     deinit {
-        Task {
-            try? await fileActor.close()
+        // Capture fileActor locally to avoid retaining self in the Task
+        let actor = fileActor
+        Task.detached {
+            try? await actor.close()
         }
     }
 }
