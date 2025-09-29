@@ -231,17 +231,17 @@ struct FileDispatcherChildDispatcherTests {
     func forwardMessagesToChildDispatchers() async throws {
         
         // Given
-        let fileURL    = createTempFileURL()
+        let fileURL = createTempFileURL()
         defer { cleanupFile(at: fileURL) }
         
         let dispatcher = try FileDispatcher(fileURL: fileURL)
-        let child1     = ChildDispatcherExample()
-        let child2     = ChildDispatcherExample()
+        let child1 = ChildDispatcherExample()
+        let child2 = ChildDispatcherExample()
         
         dispatcher.addToNextDispatchers(child1)
         dispatcher.addToNextDispatchers(child2)
         
-        let message    = Message(payload: .key(key: "Forward test"), priority: .info)
+        let message = Message(payload: .key(key: "Forward test"), priority: .info)
         
         // When
         try await dispatcher.handle(message)
@@ -254,5 +254,119 @@ struct FileDispatcherChildDispatcherTests {
         #expect(child2.receivedMessages.count == 1)
         #expect(child1.receivedMessages.first?.description == message.description)
         #expect(child2.receivedMessages.first?.description == message.description)
+    }
+}
+
+@Suite("FileDispatcher Message Handling Tests")
+struct FileDispatcherMessageHandlingTests {
+    
+    /// Helper to create a temporary file URL for testing
+    private func createTempFileURL() -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        return tempDir.appendingPathComponent("test_log_\(UUID().uuidString).log")
+    }
+    
+    /// Helper to clean up test files
+    private func cleanupFile(at url: URL) {
+        try? FileManager.default.removeItem(at: url)
+    }
+    
+    /// Helper to read file contents
+    private func readFileContents(at url: URL) throws -> String {
+        return try String(contentsOf: url, encoding: .utf8)
+    }
+    
+    @Test("FileDispatcher handles basic message writing")
+    func handlesBasicMessageWriting() async throws {
+        
+        // Given
+        let fileURL      = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let message      = Message(payload: .key(key: "Test message"), priority: .info)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        let fileContents = try readFileContents(at: fileURL)
+        #expect(fileContents.contains("Test message"))
+        #expect(fileContents.contains("INFO"))
+    }
+    
+    @Test("FileDispatcher handles different message types")
+    func handlesDifferentMessageTypes() async throws {
+        
+        // Given
+        let fileURL      = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let keyMessage   = Message(payload: .key(key: "Key message"), priority: .debug)
+        let codeMessage  = Message(payload: .code(code: 404), priority: .critical)
+        
+        // When
+        try await dispatcher.handle(keyMessage)
+        try await dispatcher.handle(codeMessage)
+        try await dispatcher.flush()
+        
+        // Then
+        let fileContents = try readFileContents(at: fileURL)
+        #expect(fileContents.contains("Key message"))
+        #expect(fileContents.contains("404"))
+        #expect(fileContents.contains("DEBUG"))
+        #expect(fileContents.contains("CRITICAL"))
+    }
+    
+    @Test("FileDispatcher handles multiple messages")
+    func handlesMultipleMessages() async throws {
+        
+        // Given
+        let fileURL      = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let messages     = [
+            Message(payload: .key(key: "First message"), priority: .info),
+            Message(payload: .key(key: "Second message"), priority: .high),
+            Message(payload: .key(key: "Third message"), priority: .critical)
+        ]
+        
+        // When
+        for message in messages {
+            try await dispatcher.handle(message)
+        }
+        try await dispatcher.flush()
+        
+        // Then
+        let fileContents = try readFileContents(at: fileURL)
+        #expect(fileContents.contains("First message"))
+        #expect(fileContents.contains("Second message"))
+        #expect(fileContents.contains("Third message"))
+    }
+    
+    @Test("FileDispatcher includes timestamp in log entries")
+    func includesTimestampInLogEntries() async throws {
+        
+        // Given
+        let fileURL      = createTempFileURL()
+        defer { cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let message      = Message(payload: .key(key: "Timestamped message"), priority: .info)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        let fileContents = try readFileContents(at: fileURL)
+        // Check for ISO8601 timestamp format pattern
+        #expect(fileContents.contains("["))
+        #expect(fileContents.contains("T"))
+        #expect(fileContents.contains("Z"))
+        #expect(fileContents.contains("Timestamped message"))
     }
 }
