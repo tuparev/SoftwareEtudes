@@ -292,8 +292,6 @@ struct FileDispatcherChildDispatcherTests {
 @Suite("FileDispatcher Message Handling Tests")
 struct FileDispatcherMessageHandlingTests {
     
-    
-    
     @Test("FileDispatcher handles basic message writing")
     func handlesBasicMessageWriting() async throws {
         
@@ -386,5 +384,126 @@ struct FileDispatcherMessageHandlingTests {
         #expect(fileContents.contains("T"))
         #expect(fileContents.contains("Z"))
         #expect(fileContents.contains("Timestamped message"))
+    }
+}
+
+@Suite("FileDispatcher Delegation Tests")
+struct FileDispatcherDelegationTests {
+    
+    @Test("FileDispatcher respects delegate message filtering")
+    func respectDelegateMessageFiltering() async throws {
+        
+        // Given
+        let fileURL                    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let delegate                   = DelegateExample()
+        delegate.shouldDispatchMessage = false
+        
+        let dispatcher                 = try FileDispatcher(fileURL: fileURL)
+        dispatcher.dispatcherDelegate  = delegate
+        
+        let message                    = Message(payload: .key(key: "Filtered message"), priority: .info)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        #expect(delegate.receivedMessages.count == 1)
+        #expect(delegate.receivedMessages.first?.description == message.description)
+        
+        // File should be empty (or only contain newlines/whitespace)
+        let fileContents               = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(fileContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+    
+    @Test("FileDispatcher respects delegate priority filtering")
+    func respectDelegatePriorityFiltering() async throws {
+        
+        // Given
+        let fileURL                     = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let delegate                    = DelegateExample()
+        delegate.shouldDispatchPriority = false
+        
+        let dispatcher                  = try FileDispatcher(fileURL: fileURL)
+        dispatcher.dispatcherDelegate   = delegate
+        
+        let message                     = Message(payload: .key(key: "Priority filtered"), priority: .high)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        #expect(delegate.receivedPriorities.count == 1)
+        #expect(delegate.receivedPriorities.first == .high)
+        
+        // File should be empty (or only contain newlines/whitespace)
+        let fileContents                = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(fileContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+    
+    @Test("FileDispatcher handles messages when delegate allows")
+    func handleMessagesWhenDelegateAllows() async throws {
+        
+        // Given
+        let fileURL                     = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let delegate                    = DelegateExample()
+        delegate.shouldDispatchMessage  = true
+        delegate.shouldDispatchPriority = true
+        
+        let dispatcher                  = try FileDispatcher(fileURL: fileURL)
+        dispatcher.dispatcherDelegate   = delegate
+        
+        let message                     = Message(payload: .key(key: "Allowed message"), priority: .info)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        #expect(delegate.receivedMessages.count == 1)
+        #expect(delegate.receivedPriorities.count == 1)
+        
+        // File should contain the message
+        let fileContents                = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(fileContents.contains("Allowed message"))
+    }
+    
+    @Test("FileDispatcher stops processing when delegate filters message")
+    func stopsProcessingWhenDelegateFiltersMessage() async throws {
+        
+        // Given
+        let fileURL                    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let delegate                   = DelegateExample()
+        delegate.shouldDispatchMessage = false  // Block file writing
+        
+        let dispatcher                 = try FileDispatcher(fileURL: fileURL)
+        dispatcher.dispatcherDelegate  = delegate
+        
+        let child                      = ChildDispatcherExample()
+        dispatcher.addToNextDispatchers(child)
+        
+        let message                    = Message(payload: .key(key: "Filtered but forwarded"), priority: .info)
+        
+        // When
+        try await dispatcher.handle(message)
+        try await dispatcher.flush()
+        
+        // Then
+        // File should be empty due to filtering
+        let fileContents               = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(fileContents.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        
+        // Child should NOT receive the message when delegate filters at top level
+        #expect(child.handleCallCount == 0)
+        #expect(child.receivedMessages.count == 0)
     }
 }
