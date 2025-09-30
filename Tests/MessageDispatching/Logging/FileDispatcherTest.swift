@@ -12,6 +12,59 @@ import SoftwareEtudesLogging
 
 // MARK: - Test Helper Classes
 
+/// Shared test utilities for FileDispatcher tests
+fileprivate class FileDispatcherTestHelpers {
+    
+    /// Helper to create a temporary file URL for testing
+    static func createTempFileURL() -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        return tempDir.appendingPathComponent("test_log_\(UUID().uuidString).log")
+    }
+    
+    /// Helper to clean up test files
+    static func cleanupFile(at url: URL) {
+        try? FileManager.default.removeItem(at: url)
+    }
+    
+    /// Helper to read file contents
+    static func readFileContents(at url: URL) throws -> String {
+        return try String(contentsOf: url, encoding: .utf8)
+    }
+    
+    /// Helper to clean up test files and any rotated backup files
+    static func cleanupFileAndRotations(at url: URL) {
+        try? FileManager.default.removeItem(at: url)
+        
+        // Also clean up any rotated files
+        let dir      = url.deletingLastPathComponent()
+        let prefix   = url.deletingPathExtension().lastPathComponent + "_"
+        let ext      = url.pathExtension
+        
+        if let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
+            for file in files {
+                if file.lastPathComponent.hasPrefix(prefix) && file.pathExtension == ext {
+                    try? FileManager.default.removeItem(at: file)
+                }
+            }
+        }
+    }
+    
+    /// Helper to count rotated backup files
+    static func countBackupFiles(for url: URL) -> Int {
+        let dir         = url.deletingLastPathComponent()
+        let prefix      = url.deletingPathExtension().lastPathComponent + "_"
+        let ext         = url.pathExtension
+        
+        guard let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else {
+            return 0
+        }
+        
+        return files.filter { file in
+            file.lastPathComponent.hasPrefix(prefix) && file.pathExtension == ext
+        }.count
+    }
+}
+
 /// Test child dispatcher spy - each test uses its own instance
 fileprivate class ChildDispatcherExample: MessageDispatching {
     var dispatcherDelegate: MessageDispatchingDelegate?
@@ -56,23 +109,12 @@ fileprivate class DelegateExample: MessageDispatchingDelegate {
 @Suite("FileDispatcher Initialisation Tests")
 struct FileDispatcherInitialisationTests {
     
-    /// Helper to create a temporary file URL for testing
-    private func createTempFileURL() -> URL {
-        let tempDir = FileManager.default.temporaryDirectory
-        return tempDir.appendingPathComponent("test_log_\(UUID().uuidString).log")
-    }
-    
-    /// Helper to clean up test files
-    private func cleanupFile(at url: URL) {
-        try? FileManager.default.removeItem(at: url)
-    }
-    
     @Test("FileDispatcher initialises with default values")
     func initialisationWithDefaults() throws {
         
         // Given
-        let fileURL    = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         // When
         let dispatcher = try FileDispatcher(fileURL: fileURL)
@@ -86,8 +128,8 @@ struct FileDispatcherInitialisationTests {
     func initialisationWithCustomParameters() throws {
         
         // Given
-        let fileURL             = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL             = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         let maxFileSize: UInt64 = 5 * 1024 * 1024  // 5 MB
         let maxBackupCount      = 3
         
@@ -107,8 +149,8 @@ struct FileDispatcherInitialisationTests {
     func createsFileIfNotExists() throws {
         
         // Given
-        let fileURL = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         // Ensure file doesn't exist initially
         #expect(!FileManager.default.fileExists(atPath: fileURL.path))
@@ -136,23 +178,13 @@ struct FileDispatcherInitialisationTests {
 @Suite("FileDispatcher Child Dispatcher Tests")
 struct FileDispatcherChildDispatcherTests {
     
-    /// Helper to create a temporary file URL for testing
-    private func createTempFileURL() -> URL {
-        let tempDir = FileManager.default.temporaryDirectory
-        return tempDir.appendingPathComponent("test_log_\(UUID().uuidString).log")
-    }
-    
-    /// Helper to clean up test files
-    private func cleanupFile(at url: URL) {
-        try? FileManager.default.removeItem(at: url)
-    }
     
     @Test("FileDispatcher initialises with no children")
     func initializesWithNoChildren() throws {
         
         // Given
-        let fileURL    = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher = try FileDispatcher(fileURL: fileURL)
         
@@ -167,8 +199,8 @@ struct FileDispatcherChildDispatcherTests {
     func addChildDispatchers() throws {
         
         // Given
-        let fileURL    = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher = try FileDispatcher(fileURL: fileURL)
         let child1     = ChildDispatcherExample()
@@ -187,8 +219,8 @@ struct FileDispatcherChildDispatcherTests {
     func removeSpecificChildDispatcher() throws {
         
         // Given
-        let fileURL    = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher = try FileDispatcher(fileURL: fileURL)
         let child1     = ChildDispatcherExample()
@@ -209,8 +241,8 @@ struct FileDispatcherChildDispatcherTests {
     func removeAllChildDispatchers() throws {
         
         // Given
-        let fileURL    = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL    = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher = try FileDispatcher(fileURL: fileURL)
         let child1     = ChildDispatcherExample()
@@ -231,8 +263,8 @@ struct FileDispatcherChildDispatcherTests {
     func forwardMessagesToChildDispatchers() async throws {
         
         // Given
-        let fileURL = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher = try FileDispatcher(fileURL: fileURL)
         let child1 = ChildDispatcherExample()
@@ -260,28 +292,14 @@ struct FileDispatcherChildDispatcherTests {
 @Suite("FileDispatcher Message Handling Tests")
 struct FileDispatcherMessageHandlingTests {
     
-    /// Helper to create a temporary file URL for testing
-    private func createTempFileURL() -> URL {
-        let tempDir = FileManager.default.temporaryDirectory
-        return tempDir.appendingPathComponent("test_log_\(UUID().uuidString).log")
-    }
     
-    /// Helper to clean up test files
-    private func cleanupFile(at url: URL) {
-        try? FileManager.default.removeItem(at: url)
-    }
-    
-    /// Helper to read file contents
-    private func readFileContents(at url: URL) throws -> String {
-        return try String(contentsOf: url, encoding: .utf8)
-    }
     
     @Test("FileDispatcher handles basic message writing")
     func handlesBasicMessageWriting() async throws {
         
         // Given
-        let fileURL      = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher   = try FileDispatcher(fileURL: fileURL)
         let message      = Message(payload: .key(key: "Test message"), priority: .info)
@@ -291,7 +309,7 @@ struct FileDispatcherMessageHandlingTests {
         try await dispatcher.flush()
         
         // Then
-        let fileContents = try readFileContents(at: fileURL)
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         #expect(fileContents.contains("Test message"))
         #expect(fileContents.contains("INFO"))
     }
@@ -300,8 +318,8 @@ struct FileDispatcherMessageHandlingTests {
     func handlesDifferentMessageTypes() async throws {
         
         // Given
-        let fileURL      = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher   = try FileDispatcher(fileURL: fileURL)
         let keyMessage   = Message(payload: .key(key: "Key message"), priority: .debug)
@@ -313,7 +331,7 @@ struct FileDispatcherMessageHandlingTests {
         try await dispatcher.flush()
         
         // Then
-        let fileContents = try readFileContents(at: fileURL)
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         #expect(fileContents.contains("Key message"))
         #expect(fileContents.contains("404"))
         #expect(fileContents.contains("DEBUG"))
@@ -324,8 +342,8 @@ struct FileDispatcherMessageHandlingTests {
     func handlesMultipleMessages() async throws {
         
         // Given
-        let fileURL      = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher   = try FileDispatcher(fileURL: fileURL)
         let messages     = [
@@ -341,7 +359,7 @@ struct FileDispatcherMessageHandlingTests {
         try await dispatcher.flush()
         
         // Then
-        let fileContents = try readFileContents(at: fileURL)
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         #expect(fileContents.contains("First message"))
         #expect(fileContents.contains("Second message"))
         #expect(fileContents.contains("Third message"))
@@ -351,8 +369,8 @@ struct FileDispatcherMessageHandlingTests {
     func includesTimestampInLogEntries() async throws {
         
         // Given
-        let fileURL      = createTempFileURL()
-        defer { cleanupFile(at: fileURL) }
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
         
         let dispatcher   = try FileDispatcher(fileURL: fileURL)
         let message      = Message(payload: .key(key: "Timestamped message"), priority: .info)
@@ -362,7 +380,7 @@ struct FileDispatcherMessageHandlingTests {
         try await dispatcher.flush()
         
         // Then
-        let fileContents = try readFileContents(at: fileURL)
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         // Check for ISO8601 timestamp format pattern
         #expect(fileContents.contains("["))
         #expect(fileContents.contains("T"))
