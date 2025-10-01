@@ -507,3 +507,142 @@ struct FileDispatcherDelegationTests {
         #expect(child.receivedMessages.count == 0)
     }
 }
+
+@Suite("FileDispatcher File Operations Tests")
+struct FileDispatcherFileOperationsTests {
+    
+    @Test("FileDispatcher flushes buffered entries manually")
+    func flushesBufferedEntriesManually() async throws {
+        
+        // Given
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let message      = Message(payload: .key(key: "Buffered message"), priority: .info)
+        
+        // When - handle message but don't flush automatically
+        try await dispatcher.handle(message)
+        
+        // Then - manually flush
+        //The dispatcher only automatically flushes when:
+        //1. The buffer reaches 50 entries (maxBufferSize = 50)
+        //2. 2 seconds have passed since the last flush (flushInterval = 2.0)
+        try await dispatcher.flush()
+        
+        // Then - file should contain the message now
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(fileContents.contains("Buffered message"))
+    }
+    
+    
+    @Test("FileDispatcher handles multiple messages with buffering")
+    func handlesMultipleMessagesWithBuffering() async throws {
+        
+        // Given
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let messageCount = 10
+        
+        // When
+        for i in 1...messageCount {
+            let message  = Message(payload: .key(key: "Message \(i)"), priority: .info)
+            try await dispatcher.handle(message)
+        }
+        try await dispatcher.flush()
+        
+        // Then
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        for i in 1...messageCount {
+            #expect(fileContents.contains("Message \(i)"))
+        }
+    }
+    
+    @Test("FileDispatcher continues working after write errors")
+    func continuesWorkingAfterWriteErrors() async throws {
+        
+        // Given
+        let fileURL             = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher          = try FileDispatcher(fileURL: fileURL)
+        let validMessage        = Message(payload: .key(key: "Valid message"), priority: .info)
+        let anotherValidMessage = Message(payload: .key(key: "Another valid message"), priority: .info)
+        
+        // When - handle valid message
+        try await dispatcher.handle(validMessage)
+        
+        // Simulate potential write error scenario by removing the file
+        try? FileManager.default.removeItem(at: fileURL)
+        
+        // Handle another message - should not throw even if write fails
+        try await dispatcher.handle(anotherValidMessage)
+        
+        // Then - should not crash and should continue functioning
+        #expect(true) // If we reach here, error handling worked
+    }
+    
+    @Test("FileDispatcher handles empty messages gracefully")
+    func handlesEmptyMessagesGracefully() async throws {
+        
+        // Given
+        let fileURL         = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher      = try FileDispatcher(fileURL: fileURL)
+        let emptyKeyMessage = Message(payload: .key(key: ""), priority: .info)
+        let zeroCodeMessage = Message(payload: .code(code: 0), priority: .info)
+        
+        // When
+        try await dispatcher.handle(emptyKeyMessage)
+        try await dispatcher.handle(zeroCodeMessage)
+        try await dispatcher.flush()
+        
+        // Then - should not crash and should write something
+        let fileContents    = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(!fileContents.isEmpty)
+        #expect(fileContents.contains("INFO"))
+    }
+    
+    @Test("FileDispatcher preserves message order")
+    func preservesMessageOrder() async throws {
+        
+        // Given
+        let fileURL           = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher        = try FileDispatcher(fileURL: fileURL)
+        let messages          = [
+            Message(payload: .key(key: "First"), priority: .info),
+            Message(payload: .key(key: "Second"), priority: .info),
+            Message(payload: .key(key: "Third"), priority: .info),
+            Message(payload: .key(key: "Fourth"), priority: .info)
+        ]
+        
+        // When
+        for message in messages {
+            try await dispatcher.handle(message)
+        }
+        try await dispatcher.flush()
+        
+        // Then
+        let fileContents      = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        let firstIndex        = fileContents.range(of: "First")?.lowerBound
+        let secondIndex       = fileContents.range(of: "Second")?.lowerBound
+        let thirdIndex        = fileContents.range(of: "Third")?.lowerBound
+        let fourthIndex       = fileContents.range(of: "Fourth")?.lowerBound
+        
+        #expect(firstIndex  != nil)
+        #expect(secondIndex != nil)
+        #expect(thirdIndex  != nil)
+        #expect(fourthIndex != nil)
+        
+        if let first          = firstIndex, let second = secondIndex, let third = thirdIndex, let fourth = fourthIndex {
+            #expect(first < second)
+            #expect(second < third)
+            #expect(third < fourth)
+        }
+    }
+}
