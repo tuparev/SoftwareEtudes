@@ -23,6 +23,9 @@ private actor FileActor {
     private let flushInterval: TimeInterval     = 2.0
     private var lastFlush: Date                 = Date()
     
+    // Prevent concurrent rotation
+    private var isRotating: Bool                = false
+    
     init(fileURL: URL, maxFileSize: UInt64, maxBackupCount: Int) throws {
         self.fileURL        = fileURL
         self.maxFileSize    = maxFileSize
@@ -48,6 +51,7 @@ private actor FileActor {
         }
     }
     
+    
     private func flushBuffer() throws {
         guard !buffer.isEmpty else { return }
         
@@ -60,8 +64,21 @@ private actor FileActor {
         // Write all buffered entries at once
         let combinedEntries = buffer.joined()
         if let data = combinedEntries.data(using: .utf8) {
-            try fileHandle.write(contentsOf: data)
-            try fileHandle.synchronize() // Ensure data is written to disk
+            do {
+                try fileHandle.write(contentsOf: data)
+                try fileHandle.synchronize() // Ensure data is written to disk
+            } catch {
+                // If file operations fail, the file handle might be corrupted
+                // Safely recreate it without calling close() on potentially corrupted handle
+                if !FileManager.default.fileExists(atPath: fileURL.path) {
+                    FileManager.default.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+                }
+                
+                // Create new file handle
+                self.fileHandle = try FileHandle(forWritingTo: fileURL)
+                try self.fileHandle.write(contentsOf: data)
+                try self.fileHandle.synchronize()
+            }
         }
         buffer.removeAll()
     }
@@ -71,19 +88,36 @@ private actor FileActor {
     }
     
     private func rotateIfNeeded() throws {
+        // Prevent concurrent rotation
+        guard !isRotating else { return }
+        
         let attributes  = try FileManager.default.attributesOfItem(atPath: fileURL.path)
         guard let size  = attributes[.size] as? UInt64, size >= maxFileSize else { return }
         
-        try fileHandle.close()
+        isRotating = true
+        defer { isRotating = false }
+        
+        // Prepare rotation in a safe way
         let timestamp   = ISO8601DateFormatter().string(from: Date())
         let rotatedName = fileURL.deletingPathExtension().lastPathComponent
         + "_" + timestamp.replacingOccurrences(of: ":", with: "-")
         + "." + fileURL.pathExtension
         let rotatedURL  = fileURL.deletingLastPathComponent()
             .appendingPathComponent(rotatedName)
+        
+        // Safely close the current file handle
+        do {
+            try fileHandle.close()
+        } catch {
+            // If close fails, new handle anyway will be created anyway
+        }
+        
+        // Perform file operations
         try FileManager.default.moveItem(at: fileURL, to: rotatedURL)
         cleanupOldBackups()
         FileManager.default.createFile(atPath: fileURL.path, contents: nil, attributes: nil)
+        
+        // Create new file handle - this must succeed
         self.fileHandle = try FileHandle(forWritingTo: fileURL)
     }
     
@@ -183,7 +217,12 @@ public final class FileDispatcher: MessageDispatching {
         
         // 4) Forward to downstream dispatchers
         for child in children {
-            try await child.handle(message)
+            do {
+                try await child.handle(message)
+            } catch {
+                // Log child dispatcher failure but don't prevent other children from processing
+                print("FileDispatcher: Child dispatcher failed to handle message - \(error)")
+            }
         }
     }
     
