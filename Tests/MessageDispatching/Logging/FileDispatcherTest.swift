@@ -547,7 +547,7 @@ struct FileDispatcherFileOperationsTests {
         let messageCount = 10
         
         // When
-        for i in 1...messageCount {
+        for i in 0..<messageCount {
             let message  = Message(payload: .key(key: "Message \(i)"), priority: .info)
             try await dispatcher.handle(message)
         }
@@ -555,7 +555,7 @@ struct FileDispatcherFileOperationsTests {
         
         // Then
         let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
-        for i in 1...messageCount {
+        for i in 0..<messageCount {
             #expect(fileContents.contains("Message \(i)"))
         }
     }
@@ -644,5 +644,158 @@ struct FileDispatcherFileOperationsTests {
             #expect(second < third)
             #expect(third < fourth)
         }
+    }
+}
+
+@Suite("FileDispatcher Concurrency Tests")
+struct FileDispatcherConcurrencyTests {
+    
+    @Test("FileDispatcher handles concurrent message writes safely")
+    func handlesConcurrentMessageWritesSafely() async throws {
+        
+        // Given
+        let fileURL                 = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher              = try FileDispatcher(fileURL: fileURL)
+        let messageCount            = 25
+        let concurrentTasks         = 4
+        
+        // When - write messages concurrently from multiple tasks
+        await withTaskGroup(of: Void.self) { group in
+            for taskId in 0..<concurrentTasks {
+                group.addTask {
+                    for messageId in 0..<messageCount {
+                        let message = Message(
+                            payload: .key(key: "Task \(taskId) Message \(messageId)"),
+                            priority: .info
+                        )
+                        try? await dispatcher.handle(message)
+                    }
+                }
+            }
+        }
+        
+        try await dispatcher.flush()
+        
+        // Then - all messages should be written without corruption
+        let fileContents            = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        
+        // Check that we have messages from all tasks
+        for taskId in 0..<concurrentTasks {
+            #expect(fileContents.contains("Task \(taskId)"))
+        }
+    }
+    
+    @Test("FileDispatcher handles concurrent flush operations safely")
+    func handlesConcurrentFlushOperationsSafely() async throws {
+        
+        // Given
+        let fileURL      = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher   = try FileDispatcher(fileURL: fileURL)
+        let messageCount = 15
+        
+        // Write some messages first
+        for i in 0..<messageCount {
+            let message  = Message(payload: .key(key: "Message \(i)"), priority: .info)
+            try await dispatcher.handle(message)
+        }
+        
+        // When - flush concurrently from multiple tasks
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0..<8 {
+                group.addTask {
+                    try? await dispatcher.flush()
+                }
+            }
+        }
+        
+        // Then - should not crash and all messages should be written
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        for i in 0..<messageCount {
+            #expect(fileContents.contains("Message \(i)"))
+        }
+    }
+    
+    @Test("FileDispatcher maintains thread safety during rotation")
+    func maintainsThreadSafetyDuringRotation() async throws {
+        
+        // Given
+        let fileURL = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let smallMaxSize: UInt64 = 150 // Small size to trigger rotation
+        let dispatcher = try FileDispatcher(fileURL: fileURL, maxFileSize: smallMaxSize, maxBackupCount: 2)
+        
+        let messageCount = 15
+        let concurrentTasks = 3
+        
+        // When - write large messages concurrently to trigger rotation
+        await withTaskGroup(of: Void.self) { group in
+            for taskId in 0..<concurrentTasks {
+                group.addTask {
+                    for messageId in 0..<messageCount {
+                        let largeMessage = String(repeating: "Large message from task \(taskId) message \(messageId). ", count: 2)
+                        let message = Message(payload: .key(key: largeMessage), priority: .info)
+                        try? await dispatcher.handle(message)
+                    }
+                }
+            }
+        }
+        
+        try await dispatcher.flush()
+        
+        // Then - should not crash and should handle rotation safely
+        #expect(FileManager.default.fileExists(atPath: fileURL.path))
+        
+        // Should have some content in the current file
+        let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        #expect(!fileContents.isEmpty)
+    }
+    
+    @Test("FileDispatcher handles concurrent operations with child dispatchers")
+    func handlesConcurrentOperationsWithChildDispatchers() async throws {
+        
+        // Given
+        let fileURL                 = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFile(at: fileURL) }
+        
+        let dispatcher              = try FileDispatcher(fileURL: fileURL)
+        let child1                  = ChildDispatcherExample()
+        let child2                  = ChildDispatcherExample()
+        
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        let messageCount            = 3
+        
+        // When - write messages concurrently
+        await withTaskGroup(of: Void.self) { group in
+            for taskId in 0..<3 {
+                group.addTask {
+                    for messageId in 0..<messageCount {
+                        let message = Message(
+                            payload: .key(key: "Concurrent Task \(taskId) Message \(messageId)"),
+                            priority: .info
+                        )
+                        try? await dispatcher.handle(message)
+                    }
+                }
+            }
+        }
+        
+        try await dispatcher.flush()
+        
+        // Then - file and child dispatchers should have all messages
+        let fileContents            = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
+        for taskId in 0..<3 {
+            #expect(fileContents.contains("Concurrent Task \(taskId)"))
+        }
+        
+        // Child dispatchers should have received all messages
+        #expect(child1.receivedMessages.count == messageCount * 3)
+        #expect(child2.receivedMessages.count == messageCount * 3)
     }
 }
