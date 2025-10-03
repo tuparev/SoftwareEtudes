@@ -799,3 +799,136 @@ struct FileDispatcherConcurrencyTests {
         #expect(child2.receivedMessages.count == messageCount * 3)
     }
 }
+
+@Suite("FileDispatcher File Rotation Tests")
+struct FileDispatcherFileRotationTests {
+    
+    @Test("FileDispatcher rotates file when size limit is reached")
+    func rotatesFileWhenSizeLimitReached() async throws {
+        
+        // Given
+        let fileURL                                  = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFileAndRotations(at: fileURL) }
+        
+        let smallMaxSize: UInt64                     = 15 // Very small size to trigger rotation quickly
+        let dispatcher                               = try FileDispatcher(fileURL: fileURL, maxFileSize: smallMaxSize, maxBackupCount: 2)
+        
+        // Create a message that will definitely exceed the size limit
+        // Each log entry includes timestamp: [timestamp] message\n
+        // ISO8601 timestamp is ~25 chars, so we need a message that with timestamp exceeds 15 bytes
+        let largeMessage                             = String(repeating: "Ani", count: 20) // 20 chars + timestamp > 15 bytes
+        let message                                  = Message(payload: .key(key: largeMessage), priority: .info)
+        
+        // When - write messages and force flush after each to trigger rotation checks
+        // Note: Size check is throttled to once per second, so we need to wait between checks
+        for i in 0..<4 {
+            try await dispatcher.handle(message)
+            try await dispatcher.flush() // Force flush to trigger rotation checks
+            
+            // Debug output
+            let currentFileSize                      = try FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? UInt64 ?? 0
+            print("After message \(i + 1): file size = \(currentFileSize) bytes")
+            
+            // Wait 1.1 seconds to ensure size check interval passes
+            if i < 3 {
+                try await Task.sleep(nanoseconds: 1_100_000_000) // 1.1 seconds
+            }
+        }
+        
+        // Then - should have created backup files
+        let backupCount                              = FileDispatcherTestHelpers.countBackupFiles(for: fileURL)
+        print("Backup files found: \(backupCount)")
+        
+        #expect(backupCount > 0, "Should have created at least one backup file, but found \(backupCount)")
+        
+        // Original file should still exist
+        #expect(FileManager.default.fileExists(atPath: fileURL.path))
+    }
+    
+    @Test("FileDispatcher respects maximum backup count")
+    func respectsMaximumBackupCount() async throws {
+        
+        // Given
+        let fileURL                                  = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFileAndRotations(at: fileURL) }
+        
+        // Use a very small max size to force rotations
+        let smallMaxSize: UInt64                     = 15  // Very small to ensure rotation
+        let maxBackups                               = 3
+        let dispatcher                               = try FileDispatcher(fileURL: fileURL, maxFileSize: smallMaxSize, maxBackupCount: maxBackups)
+        
+        // Create a message that will definitely exceed the size limit
+        // Each log entry includes timestamp: [timestamp] message\n
+        // ISO8601 timestamp is ~25 chars, so we need a message that with timestamp exceeds 15 bytes
+        let largeMessage                             = String(repeating: "A", count: 20)  // 20 chars + timestamp > 15 bytes
+        let message                                  = Message(payload: .key(key: largeMessage), priority: .info)
+        
+        // When - write enough messages to trigger multiple rotations
+        // We need at least 4 rotations to test the backup limit (3 + current file)
+        // Note: Size check is throttled to once per second, so we need to wait between checks
+        for i in 0..<6 {
+            try await dispatcher.handle(message)
+            try await dispatcher.flush() // Force flush to trigger rotation checks
+            
+            // Debug output
+            let currentFileSize                      = try FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? UInt64 ?? 0
+            print("After message \(i + 1): file size = \(currentFileSize) bytes")
+            
+            // Wait 1.1 seconds to ensure size check interval passes
+            if i < 5 { // Don't wait after the last message
+                try await Task.sleep(nanoseconds: 1_100_000_000) // 1.1 seconds
+            }
+        }
+        
+        // Then - should not exceed maximum backup count
+        let backupCount                              = FileDispatcherTestHelpers.countBackupFiles(for: fileURL)
+        
+        // Debug output to verify rotation is working
+        let currentFileSize                          = try FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? UInt64 ?? 0
+        print("Current file size: \(currentFileSize) bytes")
+        print("Backup files found: \(backupCount)")
+        
+        #expect(backupCount <= maxBackups, "Should not exceed maximum backup count of \(maxBackups), but found \(backupCount)")
+        #expect(backupCount > 0, "Should have created at least one backup file, but found \(backupCount)")
+    }
+    
+    @Test("FileDispatcher with zero max backup count works correctly")
+    func withZeroMaxBackupCountWorksCorrectly() async throws {
+        
+        // Given
+        let fileURL              = FileDispatcherTestHelpers.createTempFileURL()
+        defer { FileDispatcherTestHelpers.cleanupFileAndRotations(at: fileURL) }
+        
+        let smallMaxSize: UInt64 = 15  // Very small to ensure rotation
+        let dispatcher           = try FileDispatcher(fileURL: fileURL, maxFileSize: smallMaxSize, maxBackupCount: 0)
+        
+        // Create a message that will definitely exceed the size limit
+        let largeMessage         = String(repeating: "NoBackup", count: 20) // 20 chars + timestamp > 15 bytes
+        let message              = Message(payload: .key(key: largeMessage), priority: .info)
+        
+        // When - write messages that would trigger rotation
+        // Note: Size check is throttled to once per second, so we need to wait between checks
+        for i in 0..<4 {
+            try await dispatcher.handle(message)
+            try await dispatcher.flush() // Force flush to trigger rotation checks
+            
+            // Debug output
+            let currentFileSize  = try FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? UInt64 ?? 0
+            print("After message \(i + 1): file size = \(currentFileSize) bytes")
+            
+            // Wait 1.1 seconds to ensure size check interval passes
+            if i < 3 {
+                try await Task.sleep(nanoseconds: 1_100_000_000) // 1.1 seconds
+            }
+        }
+        
+        // Then - should have no backup files (they get immediately deleted with maxBackupCount: 0)
+        let backupCount          = FileDispatcherTestHelpers.countBackupFiles(for: fileURL)
+        print("Backup files found: \(backupCount)")
+        
+        #expect(backupCount == 0, "Should have no backup files with maxBackupCount: 0, but found \(backupCount)")
+        
+        // Original file should still exist
+        #expect(FileManager.default.fileExists(atPath: fileURL.path))
+    }
+}
