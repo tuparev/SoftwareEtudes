@@ -43,7 +43,7 @@ public final class NetworkDispatcher: MessageDispatching {
             else { return }
         }
         
-        // 2) Add message to buffer
+        // 2) Add message to bufferx
         messageBuffer.append(message)
         
         // 3) Check if we should flush (batch is full)
@@ -54,6 +54,11 @@ public final class NetworkDispatcher: MessageDispatching {
         for child in children {
             try await child.handle(message)
         }
+    }
+    
+    /// Manually flush any buffered messages to the network endpoint
+    public func flush() async {
+        await flushMessages()
     }
     
     // MARK: Private Properties
@@ -72,15 +77,15 @@ public final class NetworkDispatcher: MessageDispatching {
     
     private func flushMessages() async {
         
-        let messagesToSend = messageBuffer
+        let messagesToSend   = messageBuffer
         messageBuffer.removeAll()
         
         // Skip if no messages
         guard !messagesToSend.isEmpty else { return }
         
         // Create HTTP request
-        var request = URLRequest(url: endpoint)
-        request.httpMethod = "POST"
+        var request          = URLRequest(url: endpoint)
+        request.httpMethod   = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         // Add custom headers
@@ -89,12 +94,56 @@ public final class NetworkDispatcher: MessageDispatching {
         }
         
         // Create JSON payload
-        let payload = createPayload(from: messagesToSend)
+        let payload          = createPayload(from: messagesToSend)
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         } catch {
             print("NetworkDispatcher: Failed to serialise messages - \(error)")
             return
+        }
+        
+        // Send HTTP request with retry logic
+        await sendRequestWithRetry(request)
+    }
+    
+    /// Sends HTTP request with retry logic
+    private func sendRequestWithRetry(_ request: URLRequest) async {
+        var attempt = 0
+        
+        while attempt <= maxRetries {
+            do {
+                let (_, response) = try await session.data(for: request)
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    if httpResponse.statusCode >= 200 && httpResponse.statusCode < 300 {
+                        // Success
+                        return
+                    } else {
+                        print("NetworkDispatcher: HTTP error \(httpResponse.statusCode)")
+                    }
+                }
+                
+                // If we get here, it's an error
+                if attempt < maxRetries {
+                    print("NetworkDispatcher: Attempt \(attempt + 1) failed, retrying in \(retryDelay)s...")
+                    try await Task.sleep(nanoseconds: UInt64(retryDelay * 1_000_000_000))
+                    attempt += 1
+                } else {
+                    print("NetworkDispatcher: All retry attempts failed")
+                    return
+                }
+                
+            } catch {
+                print("NetworkDispatcher: Request failed - \(error)")
+                if attempt < maxRetries {
+                    print("NetworkDispatcher: Attempt \(attempt + 1) failed, retrying in \(retryDelay)s...")
+                    try? await Task.sleep(nanoseconds: UInt64(retryDelay * 1_000_000_000))
+                    attempt += 1
+                } else {
+                    print("NetworkDispatcher: All retry attempts failed")
+                    return
+                }
+            }
         }
     }
     
