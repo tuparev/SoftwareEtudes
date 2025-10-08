@@ -8,6 +8,13 @@
 import Foundation
 import SoftwareEtudesCoreMessageDispatching
 
+/// Protocol for URLSession to enable testing
+public protocol URLSessionProtocol {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
+}
+
+extension URLSession: URLSessionProtocol {}
+
 /// A dispatcher that sends log messages over HTTP to a remote endpoint.
 /// Supports batching, retry logic, and network connectivity monitoring.
 public final class NetworkDispatcher: MessageDispatching {
@@ -15,10 +22,10 @@ public final class NetworkDispatcher: MessageDispatching {
     // MARK: MessageDispatching
     public var dispatcherDelegate: MessageDispatchingDelegate?
     
-    public init(endpoint: URL) {
+    public init(endpoint: URL, session: URLSessionProtocol = URLSession.shared) {
         self.children        = []
         self.endpoint        = endpoint
-        self.session         = URLSession.shared
+        self.session         = session
         self.batchSize       = 5
         self.flushInterval   = 2.0
         self.maxRetries      = 2
@@ -64,7 +71,7 @@ public final class NetworkDispatcher: MessageDispatching {
     // MARK: Private Properties
     private var children: [MessageDispatching]
     private let endpoint: URL
-    private let session: URLSession
+    private let session: URLSessionProtocol
     private let batchSize: Int
     private let flushInterval: Double
     private let maxRetries: Int
