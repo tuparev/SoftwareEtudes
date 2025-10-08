@@ -14,14 +14,14 @@ import SoftwareEtudesLogging
 
 /// Example URLSession for testing NetworkDispatcher
 class URLSessionExample: URLSessionProtocol {
-    var ExampleResponses: [URL: (Data?, URLResponse?, Error?)] = [:]
+    var exampleResponses: [URL: (Data?, URLResponse?, Error?)] = [:]
     var capturedRequests: [URLRequest] = []
     
     func data(for request: URLRequest) async throws -> (Data, URLResponse) {
         capturedRequests.append(request)
         
         guard let url                     = request.url,
-              let (data, response, error) = ExampleResponses[url] else {
+              let (data, response, error) = exampleResponses[url] else {
             throw URLError(.notConnectedToInternet)
         }
         
@@ -33,7 +33,7 @@ class URLSessionExample: URLSessionProtocol {
     }
     
     func setExampleResponse(for url: URL, data: Data? = nil, response: URLResponse? = nil, error: Error? = nil) {
-        ExampleResponses[url] = (data, response, error)
+        exampleResponses[url] = (data, response, error)
     }
 }
 
@@ -71,5 +71,45 @@ fileprivate class NetworkDispatcherTestHelpers {
         }
         
         return !messages.isEmpty && batchSize == messages.count && !timestamp.isEmpty
+    }
+}
+
+// MARK: - NetworkDispatcher Initialisation Tests
+@Suite("NetworkDispatcher Initialisation Tests")
+struct NetworkDispatcherInitialisationTests {
+    
+    @Test("NetworkDispatcher initialises with default values")
+    func initialisesWithDefaultValues() async throws {
+        // Given
+        let endpoint   = NetworkDispatcherTestHelpers.createTestEndpoint()
+        
+        // When
+        let dispatcher = NetworkDispatcher(endpoint: endpoint)
+        
+        // Then
+        #expect(dispatcher.nextDispatchers().isEmpty)
+        #expect(dispatcher.dispatcherDelegate == nil)
+    }
+    
+    @Test("NetworkDispatcher sends requests to correct endpoint")
+    func sendsRequestsToCorrectEndpoint() async throws {
+        // Given
+        let customEndpoint = URL(string: "https://custom.example.com/api/logs")!
+        let sessionExample = URLSessionExample()
+        let dispatcher     = NetworkDispatcher(endpoint: customEndpoint, session: sessionExample)
+        
+        // Set up example response for the custom endpoint
+        let response       = NetworkDispatcherTestHelpers.createHTTPResponseExample(statusCode: 200)
+        sessionExample.setExampleResponse(for: customEndpoint, response: response)
+        
+        let message        = NetworkDispatcherTestHelpers.createTestMessage()
+        
+        // When
+        try await dispatcher.handle(message)
+        await dispatcher.flush()
+        
+        // Then
+        #expect(sessionExample.capturedRequests.count == 1)
+        #expect(sessionExample.capturedRequests.first?.url == customEndpoint, "Request should be sent to the custom endpoint")
     }
 }
