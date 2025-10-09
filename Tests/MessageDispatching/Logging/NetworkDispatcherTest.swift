@@ -74,6 +74,33 @@ fileprivate class NetworkDispatcherTestHelpers {
     }
 }
 
+// MARK: - Delegate Example
+class MessageDispatchingDelegateExample: MessageDispatchingDelegate {
+    
+    var shouldDispatchMessageReturn                  = true
+    var shouldDispatchMessageWithPriorityReturn      = true
+    var shouldDispatchMessageCalled                  = false
+    var shouldDispatchMessageWithPriorityCalled      = false
+    
+    func shouldDispatchMessage(_ message: Message) -> Bool {
+        shouldDispatchMessageCalled = true
+        return shouldDispatchMessageReturn
+    }
+    
+    func shouldDispatchMessageWithPriority(_ priority: MessagePriority) -> Bool {
+        shouldDispatchMessageWithPriorityCalled = true
+        return shouldDispatchMessageWithPriorityReturn
+    }
+    
+    func shouldDispatchSensitiveMessageArgument() -> Bool {
+        return true
+    }
+    
+    func shouldDispatchPrivateMessageArgument() -> Bool {
+        return true
+    }
+}
+
 // MARK: - NetworkDispatcher Initialisation Tests
 @Suite("NetworkDispatcher Initialisation Tests")
 struct NetworkDispatcherInitialisationTests {
