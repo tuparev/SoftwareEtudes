@@ -113,3 +113,63 @@ struct NetworkDispatcherInitialisationTests {
         #expect(sessionExample.capturedRequests.first?.url == customEndpoint, "Request should be sent to the custom endpoint")
     }
 }
+
+// MARK: - NetworkDispatcher Child Dispatcher Tests
+@Suite("NetworkDispatcher Child Dispatcher Tests")
+struct NetworkDispatcherChildDispatcherTests {
+    
+    @Test("NetworkDispatcher can add child dispatchers")
+    func canAddChildDispatchers() async throws {
+        // Given
+        let endpoint        = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let dispatcher      = NetworkDispatcher(endpoint: endpoint)
+        let childDispatcher = NetworkDispatcher(endpoint: endpoint)
+        
+        // When
+        dispatcher.addToNextDispatchers(childDispatcher)
+        
+        // Then
+        let children        = dispatcher.nextDispatchers()
+        #expect(children.count == 1)
+        #expect(children.first as? NetworkDispatcher === childDispatcher)
+    }
+    
+    @Test("NetworkDispatcher can remove specific child dispatcher")
+    func canRemoveSpecificChildDispatcher() async throws {
+        // Given
+        let endpoint   = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let dispatcher = NetworkDispatcher(endpoint: endpoint)
+        let child1     = NetworkDispatcher(endpoint: endpoint)
+        let child2     = NetworkDispatcher(endpoint: endpoint)
+        
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        // When
+        dispatcher.removeFromNextDispatchers(child1)
+        
+        // Then
+        let children   = dispatcher.nextDispatchers()
+        #expect(children.count == 1)
+        #expect(children.first as? NetworkDispatcher === child2)
+    }
+    
+    @Test("NetworkDispatcher can remove all child dispatchers")
+    func canRemoveAllChildDispatchers() async throws {
+        // Given
+        let endpoint   = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let dispatcher = NetworkDispatcher(endpoint: endpoint)
+        let child1     = NetworkDispatcher(endpoint: endpoint)
+        let child2     = NetworkDispatcher(endpoint: endpoint)
+        
+        dispatcher.addToNextDispatchers(child1)
+        dispatcher.addToNextDispatchers(child2)
+        
+        // When
+        dispatcher.removeAllFromNextDispatchers()
+        
+        // Then
+        let children   = dispatcher.nextDispatchers()
+        #expect(children.isEmpty)
+    }
+}
