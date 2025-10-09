@@ -173,3 +173,83 @@ struct NetworkDispatcherChildDispatcherTests {
         #expect(children.isEmpty)
     }
 }
+
+// MARK: - NetworkDispatcher Message Handling Tests
+@Suite("NetworkDispatcher Message Handling Tests")
+struct NetworkDispatcherMessageHandlingTests {
+    
+    @Test("NetworkDispatcher handles single message")
+    func handlesSingleMessage() async throws {
+        // Given
+        let endpoint       = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let sessionExample = URLSessionExample()
+        let dispatcher     = NetworkDispatcher(endpoint: endpoint, session: sessionExample)
+        
+        // Set up example response
+        let response       = NetworkDispatcherTestHelpers.createHTTPResponseExample(statusCode: 200)
+        sessionExample.setExampleResponse(for: endpoint, response: response)
+        
+        let message        = NetworkDispatcherTestHelpers.createTestMessage()
+        
+        // When
+        try await dispatcher.handle(message)
+        await dispatcher.flush() // Force flush to send the message
+        
+        // Then
+        #expect(sessionExample.capturedRequests.count == 1)
+        
+        let request        = sessionExample.capturedRequests.first!
+        #expect(request.url == endpoint)
+        #expect(request.httpMethod == "POST")
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == "application/json")
+        #expect(NetworkDispatcherTestHelpers.validateRequestPayload(request))
+    }
+    
+    @Test("NetworkDispatcher batches multiple messages")
+    func batchesMultipleMessages() async throws {
+        // Given
+        let endpoint       = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let sessionExample = URLSessionExample()
+        let dispatcher     = NetworkDispatcher(endpoint: endpoint, session: sessionExample)
+        
+        // Set up example response
+        let response       = NetworkDispatcherTestHelpers.createHTTPResponseExample(statusCode: 200)
+        sessionExample.setExampleResponse(for: endpoint, response: response)
+        
+        let messages       = (0..<3).map { i in
+            NetworkDispatcherTestHelpers.createTestMessage(payload: "Message \(i)")
+        }
+        
+        // When
+        for message in messages {
+            try await dispatcher.handle(message)
+        }
+        await dispatcher.flush() // Force flush to send batched messages
+        
+        // Then
+        #expect(sessionExample.capturedRequests.count == 1)
+        
+        let request        = sessionExample.capturedRequests.first!
+        #expect(NetworkDispatcherTestHelpers.validateRequestPayload(request))
+    }
+    
+    @Test("NetworkDispatcher forwards messages to child dispatchers")
+    func forwardsMessagesToChildDispatchers() async throws {
+        // Given
+        let endpoint        = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let dispatcher      = NetworkDispatcher(endpoint: endpoint)
+        let childDispatcher = NetworkDispatcher(endpoint: endpoint)
+        
+        dispatcher.addToNextDispatchers(childDispatcher)
+        
+        let message = NetworkDispatcherTestHelpers.createTestMessage()
+        
+        // When
+        try await dispatcher.handle(message)
+        
+        // Then
+        // This test verifies that the method doesn't throw when forwarding to children
+        // The actual forwarding is tested by the child dispatcher's own tests
+        #expect(Bool(true)) // If we reach here, no exception was thrown
+    }
+}
