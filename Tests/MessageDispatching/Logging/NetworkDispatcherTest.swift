@@ -75,6 +75,7 @@ fileprivate class NetworkDispatcherTestHelpers {
 }
 
 // MARK: - Delegate Example
+
 class MessageDispatchingDelegateExample: MessageDispatchingDelegate {
     
     var shouldDispatchMessageReturn                  = true
@@ -90,6 +91,28 @@ class MessageDispatchingDelegateExample: MessageDispatchingDelegate {
     func shouldDispatchMessageWithPriority(_ priority: MessagePriority) -> Bool {
         shouldDispatchMessageWithPriorityCalled = true
         return shouldDispatchMessageWithPriorityReturn
+    }
+    
+    func shouldDispatchSensitiveMessageArgument() -> Bool {
+        return true
+    }
+    
+    func shouldDispatchPrivateMessageArgument() -> Bool {
+        return true
+    }
+}
+
+/// Delegate example that filters messages based on priority level
+class PriorityFilteringDelegateExample: MessageDispatchingDelegate {
+    
+    var allowedPriorities: [MessagePriority] = []
+    
+    func shouldDispatchMessage(_ message: Message) -> Bool {
+        return true
+    }
+    
+    func shouldDispatchMessageWithPriority(_ priority: MessagePriority) -> Bool {
+        return allowedPriorities.contains(priority)
     }
     
     func shouldDispatchSensitiveMessageArgument() -> Bool {
@@ -278,5 +301,91 @@ struct NetworkDispatcherMessageHandlingTests {
         // This test verifies that the method doesn't throw when forwarding to children
         // The actual forwarding is tested by the child dispatcher's own tests
         #expect(Bool(true)) // If we reach here, no exception was thrown
+    }
+}
+
+// MARK: - NetworkDispatcher Delegation Tests
+@Suite("NetworkDispatcher Delegation Tests")
+struct NetworkDispatcherDelegationTests {
+    
+    @Test("NetworkDispatcher filters debug messages but sends critical messages")
+    func filtersDebugButSendsCritical() async throws {
+        // Given
+        let endpoint                      = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let sessionExample                = URLSessionExample()
+        let dispatcher                    = NetworkDispatcher(endpoint: endpoint, session: sessionExample)
+        
+        // Set up example response
+        let response                      = NetworkDispatcherTestHelpers.createHTTPResponseExample(statusCode: 200)
+        sessionExample.setExampleResponse(for: endpoint, response: response)
+        
+        // Set up delegate that only allows critical and high priority messages
+        let delegateExample               = PriorityFilteringDelegateExample()
+        delegateExample.allowedPriorities = [.critical, .high]
+        dispatcher.dispatcherDelegate     = delegateExample
+        
+        let debugMessage                  = NetworkDispatcherTestHelpers.createTestMessage(payload: "Debug info", priority: .debug)
+        let criticalMessage               = NetworkDispatcherTestHelpers.createTestMessage(payload: "Critical error", priority: .critical)
+        
+        // When - send debug message (should be filtered)
+        try await dispatcher.handle(debugMessage)
+        await dispatcher.flush()
+        
+        #expect(sessionExample.capturedRequests.isEmpty, "Debug message should be filtered out")
+        
+        // When - send critical message (should be sent)
+        try await dispatcher.handle(criticalMessage)
+        await dispatcher.flush()
+        
+        // Then
+        #expect(sessionExample.capturedRequests.count == 1, "Critical message should be sent")
+        let request                       = sessionExample.capturedRequests.first!
+        #expect(request.url == endpoint)
+    }
+    
+    @Test("NetworkDispatcher sends only high priority messages to remote")
+    func sendsOnlyHighPriorityToRemote() async throws {
+        // Given
+        let endpoint                      = NetworkDispatcherTestHelpers.createTestEndpoint()
+        let sessionExample                = URLSessionExample()
+        let dispatcher                    = NetworkDispatcher(endpoint: endpoint, session: sessionExample)
+        
+        // Set up example response
+        let response                      = NetworkDispatcherTestHelpers.createHTTPResponseExample(statusCode: 200)
+        sessionExample.setExampleResponse(for: endpoint, response: response)
+        
+        // Set up delegate that only allows critical and high priority messages
+        let delegateExample               = PriorityFilteringDelegateExample()
+        delegateExample.allowedPriorities = [.critical, .high]
+        dispatcher.dispatcherDelegate     = delegateExample
+        
+        // Create messages with different priorities
+        let debugMessage                  = NetworkDispatcherTestHelpers.createTestMessage(payload: "Debug", priority: .debug)
+        let infoMessage                   = NetworkDispatcherTestHelpers.createTestMessage(payload: "Info", priority: .info)
+        let warningMessage                = NetworkDispatcherTestHelpers.createTestMessage(payload: "Warning", priority: .normal)
+        let errorMessage                  = NetworkDispatcherTestHelpers.createTestMessage(payload: "Error", priority: .high)
+        let criticalMessage               = NetworkDispatcherTestHelpers.createTestMessage(payload: "Critical", priority: .critical)
+        
+        // When - send messages with various priorities
+        try await dispatcher.handle(debugMessage)      // Should be filtered
+        try await dispatcher.handle(infoMessage)       // Should be filtered
+        try await dispatcher.handle(warningMessage)    // Should be filtered
+        try await dispatcher.handle(errorMessage)      // Should be sent (high priority)
+        try await dispatcher.handle(criticalMessage)   // Should be sent
+        await dispatcher.flush()
+        
+        // Then - should send 1 batched request containing 2 messages (high and critical)
+        #expect(sessionExample.capturedRequests.count == 1, "Should send one batched request")
+        
+        // Verify the request contains 2 messages
+        let request                       = sessionExample.capturedRequests.first!
+        #expect(request.url == endpoint)
+        if let body                       = request.httpBody,
+           let json                       = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+           let messages                   = json["messages"] as? [[String: Any]] {
+            #expect(messages.count == 2, "Batch should contain 2 messages (high and critical)")
+        } else {
+            Issue.record("Failed to parse request body")
+        }
     }
 }
