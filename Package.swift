@@ -25,7 +25,10 @@ let package = Package(
         .target(name: "SoftwareEtudesExecutableConfiguration", dependencies: [], path: "Sources/ExecutableConfiguration"),
         .target(name: "SoftwareEtudesLogging",
                 dependencies: [.product(name: "Logging", package: "swift-log"), "SoftwareEtudesCoreMessageDispatching"],
-                path: "Sources/MessageDispatching/Logging"),
+                path: "Sources/MessageDispatching/Logging",
+                resources: [
+                    .process("Documentation.docc")
+                ]),
         .target(name: "SoftwareEtudesCoreMessageDispatching",  dependencies: ["SoftwareEtudesUtilities"], path: "Sources/MessageDispatching/CoreMessageDispatching",
                 resources: [
                     .copy("model.json"),

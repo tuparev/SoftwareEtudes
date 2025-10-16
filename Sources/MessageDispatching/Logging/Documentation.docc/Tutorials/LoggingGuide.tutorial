@@ -1,0 +1,89 @@
+@Tutorial(time: 10) {
+    @Intro(title: "Getting Started with Logging") {
+        In this tutorial, you'll learn how to use the SoftwareEtudes logging framework:
+        - Set up a console dispatcher
+        - Configure file logging with rotation
+        - Send logs to a remote server
+        - Filter logs by priority
+    }
+    
+    @Section(title: "Console Logging") {
+        @ContentAndMedia {
+            Start with console logging for development and debugging.
+        }
+        
+        @Steps {
+            @Step {
+                Create a console dispatcher.
+                
+                @Code(name: "ConsoleSetup.swift", file: "ConsoleSetup.swift")
+            }
+            
+            @Step {
+                Bootstrap the logging system.
+                
+                @Code(name: "BootstrapLogger.swift", file: "BootstrapLogger.swift")
+            }
+            
+            @Step {
+                Use the logger in your code.
+                
+                @Code(name: "UseLogger.swift", file: "UseLogger.swift")
+            }
+        }
+    }
+    
+    @Section(title: "File Logging") {
+        @ContentAndMedia {
+            Add file logging with automatic rotation for production use.
+        }
+        
+        @Steps {
+            @Step {
+                Create a file dispatcher with rotation.
+                
+                @Code(name: "FileLogging.swift", file: "FileLogging.swift")
+            }
+            
+            @Step {
+                Flush logs manually when needed.
+                
+                @Code(name: "FlushLogs.swift", file: "FlushLogs.swift")
+            }
+        }
+    }
+    
+    @Section(title: "Network Logging") {
+        @ContentAndMedia {
+            Send logs to a remote server with batching and retry logic.
+        }
+        
+        @Steps {
+            @Step {
+                Create a network dispatcher.
+                
+                @Code(name: "NetworkLogging.swift", file: "NetworkLogging.swift")
+            }
+        }
+    }
+    
+    @Section(title: "Priority Filtering") {
+        @ContentAndMedia {
+            Filter logs by priority to control what gets logged where.
+        }
+        
+        @Steps {
+            @Step {
+                Create a priority filter delegate.
+                
+                @Code(name: "PriorityFiltering.swift", file: "PriorityFiltering.swift")
+            }
+            
+            @Step {
+                Chain multiple dispatchers with different filters.
+                
+                @Code(name: "ChainingDispatchers.swift", file: "ChainingDispatchers.swift")
+            }
+        }
+    }
+}

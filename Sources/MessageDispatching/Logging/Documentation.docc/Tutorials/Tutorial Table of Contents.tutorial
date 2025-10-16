@@ -1,0 +1,12 @@
+@Tutorials(name: "Logging") {
+    @Intro(title: "Learn Logging") {
+        Comprehensive guides for logging with the SoftwareEtudes framework.
+    }
+    
+    @Chapter(name: "Getting Started") {
+        Learn the fundamentals of logging with dispatchers and priority filtering.
+        
+        @TutorialReference(tutorial: "doc:LoggingGuide")
+    }
+}
+
