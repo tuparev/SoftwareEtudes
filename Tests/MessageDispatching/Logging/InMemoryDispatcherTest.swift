@@ -39,3 +39,56 @@ struct InMemoryDispatcherStorageTests {
         #expect(logs.count == 10)
     }
 }
+
+// MARK: - Circular Buffer Tests
+@Suite("InMemoryDispatcher Circular Buffer Tests")
+struct InMemoryDispatcherCircularBufferTests {
+    
+    @Test("Removes oldest when full")
+    func circularBufferRemovesOldestWhenFull() async {
+        let dispatcher = InMemoryDispatcher(capacity: 3)
+        
+        for i in 0..<5 {
+            let message = Message(payload: .key(key: "message\(i)"), priority: .info)
+            try? await dispatcher.handle(message)
+        }
+        
+        let logs = await dispatcher.getAllLogs()
+        #expect(logs.count == 3)
+        
+        if case let .key(key: key2) = logs[0].payload {
+            #expect(key2 == "message2")
+        }
+        if case let .key(key: key3) = logs[1].payload {
+            #expect(key3 == "message3")
+        }
+        if case let .key(key: key4) = logs[2].payload {
+            #expect(key4 == "message4")
+        }
+    }
+    
+    @Test("Continuous overwrite")
+    func circularBufferContinuousOverwrite() async {
+        let dispatcher = InMemoryDispatcher(capacity: 2)
+        
+        let msg1 = Message(payload: .code(code: 1), priority: .info)
+        let msg2 = Message(payload: .code(code: 2), priority: .info)
+        try? await dispatcher.handle(msg1)
+        try? await dispatcher.handle(msg2)
+        
+        var logs = await dispatcher.getAllLogs()
+        #expect(logs.count == 2)
+        
+        let msg3 = Message(payload: .code(code: 3), priority: .info)
+        try? await dispatcher.handle(msg3)
+        
+        logs = await dispatcher.getAllLogs()
+        #expect(logs.count == 2)
+        if case let .code(code: code) = logs[0].payload {
+            #expect(code == 2)
+        }
+        if case let .code(code: code) = logs[1].payload {
+            #expect(code == 3)
+        }
+    }
+}
