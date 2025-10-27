@@ -71,16 +71,16 @@ struct InMemoryDispatcherCircularBufferTests {
     func circularBufferContinuousOverwrite() async {
         let dispatcher                = InMemoryDispatcher(capacity: 2)
         
-        let msg1                      = Message(payload: .code(code: 1), priority: .info)
-        let msg2                      = Message(payload: .code(code: 2), priority: .info)
-        try? await dispatcher.handle(msg1)
-        try? await dispatcher.handle(msg2)
+        let message1                      = Message(payload: .code(code: 1), priority: .info)
+        let message2                      = Message(payload: .code(code: 2), priority: .info)
+        try? await dispatcher.handle(message1)
+        try? await dispatcher.handle(message2)
         
         var logs                      = await dispatcher.getAllLogs()
         #expect(logs.count == 2)
         
-        let msg3                      = Message(payload: .code(code: 3), priority: .info)
-        try? await dispatcher.handle(msg3)
+        let message3                      = Message(payload: .code(code: 3), priority: .info)
+        try? await dispatcher.handle(message3)
         
         logs                          = await dispatcher.getAllLogs()
         #expect(logs.count == 2)
@@ -135,5 +135,43 @@ struct InMemoryDispatcherPriorityFilteringTests {
         
         let logs       = await dispatcher.getAllLogs()
         #expect(logs.count == 2)
+    }
+}
+
+// MARK: - Search Tests
+@Suite("InMemoryDispatcher Search Tests")
+struct InMemoryDispatcherSearchTests {
+    
+    @Test("Search by text")
+    func searchLogsByText() async {
+        let dispatcher = InMemoryDispatcher()
+        
+        let message1   = Message(payload: .key(key: "error_database"), priority: .high, arguments: ["detail": "connection failed"])
+        let message2   = Message(payload: .key(key: "info_startup"), priority: .info, arguments: ["detail": "app started"])
+        let message3   = Message(payload: .key(key: "error_network"), priority: .high, arguments: ["detail": "timeout"])
+        
+        try? await dispatcher.handle(message1)
+        try? await dispatcher.handle(message2)
+        try? await dispatcher.handle(message3)
+        
+        let errorLogs  = await dispatcher.searchLogs(text: "error")
+        #expect(errorLogs.count == 2)
+    }
+    
+    @Test("Case insensitive search")
+    func searchLogsCaseInsensitive() async {
+        let dispatcher    = InMemoryDispatcher()
+        
+        let message1      = Message(payload: .key(key: "ERROR_HIGH"), priority: .high)
+        let message2      = Message(payload: .key(key: "info_low"), priority: .info)
+        
+        try? await dispatcher.handle(message1)
+        try? await dispatcher.handle(message2)
+        
+        let logsUppercase = await dispatcher.searchLogs(text: "ERROR")
+        let logsLowercase = await dispatcher.searchLogs(text: "error")
+        
+        #expect(logsUppercase.count == 1)
+        #expect(logsLowercase.count == 1)
     }
 }
