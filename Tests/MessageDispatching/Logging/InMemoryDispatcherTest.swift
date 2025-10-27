@@ -139,6 +139,7 @@ struct InMemoryDispatcherPriorityFilteringTests {
 }
 
 // MARK: - Search Tests
+
 @Suite("InMemoryDispatcher Search Tests")
 struct InMemoryDispatcherSearchTests {
     
@@ -175,3 +176,73 @@ struct InMemoryDispatcherSearchTests {
         #expect(logsLowercase.count == 1)
     }
 }
+
+// MARK: - Clear Tests
+
+@Suite("InMemoryDispatcher Clear Tests")
+struct InMemoryDispatcherClearTests {
+    
+    @Test("Clear all logs")
+    func clearAllLogs() async {
+        let dispatcher = InMemoryDispatcher()
+        
+        for i in 0..<5 {
+            let message = Message(payload: .key(key: "message\(i)"), priority: .info)
+            try? await dispatcher.handle(message)
+        }
+        
+        var logs = await dispatcher.getAllLogs()
+        #expect(logs.count == 5)
+        
+        await dispatcher.clear()
+        logs = await dispatcher.getAllLogs()
+        #expect(logs.count == 0)
+    }
+}
+
+// MARK: - Dispatcher Delegate Tests
+
+@Suite("InMemoryDispatcher Delegate Tests")
+struct InMemoryDispatcherDelegateTests {
+    
+    @Test("Filter by delegate")
+    func dispatcherDelegateFilter() async {
+        let dispatcher                = InMemoryDispatcher()
+        
+        let delegate                  = DispatcherDelegateExample(blockPriority: .debug)
+        dispatcher.dispatcherDelegate = delegate
+        
+        try? await dispatcher.handle(Message(payload: .key(key: "debug"), priority: .debug))
+        try? await dispatcher.handle(Message(payload: .key(key: "info"), priority: .info))
+        
+        let logs                      = await dispatcher.getAllLogs()
+        #expect(logs.count == 1)
+    }
+}
+
+// MARK: - Test Helpers
+
+class DispatcherDelegateExample: MessageDispatchingDelegate {
+    let blockPriority: MessagePriority
+    
+    init(blockPriority: MessagePriority) {
+        self.blockPriority = blockPriority
+    }
+    
+    func shouldDispatchMessage(_ message: Message) -> Bool {
+        true
+    }
+    
+    func shouldDispatchMessageWithPriority(_ priority: MessagePriority) -> Bool {
+        priority != blockPriority
+    }
+    
+    func shouldDispatchSensitiveMessageArgument() -> Bool {
+        true
+    }
+    
+    func shouldDispatchPrivateMessageArgument() -> Bool {
+        true
+    }
+}
+
