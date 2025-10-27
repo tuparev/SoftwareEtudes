@@ -220,6 +220,68 @@ struct InMemoryDispatcherDelegateTests {
     }
 }
 
+// MARK: - Dispatcher Chaining Tests
+
+@Suite("InMemoryDispatcher Chaining Tests")
+struct InMemoryDispatcherChainingTests {
+    
+    @Test("Add next dispatcher")
+    func addNextDispatcher() async {
+        let dispatcher1     = InMemoryDispatcher()
+        let dispatcher2     = InMemoryDispatcher()
+        let dispatcher3     = InMemoryDispatcher()
+        
+        dispatcher1.addToNextDispatchers(dispatcher2)
+        dispatcher1.addToNextDispatchers(dispatcher3)
+        
+        let nextDispatchers = dispatcher1.nextDispatchers()
+        #expect(nextDispatchers.count == 2)
+    }
+    
+    @Test("Remove next dispatcher")
+    func removeNextDispatcher() async {
+        let dispatcher1     = InMemoryDispatcher()
+        let dispatcher2     = InMemoryDispatcher()
+        
+        dispatcher1.addToNextDispatchers(dispatcher2)
+        dispatcher1.removeFromNextDispatchers(dispatcher2)
+        
+        let nextDispatchers = dispatcher1.nextDispatchers()
+        #expect(nextDispatchers.isEmpty)
+    }
+    
+    @Test("Remove all next dispatchers")
+    func removeAllNextDispatchers() async {
+        let dispatcher1 = InMemoryDispatcher()
+        let dispatcher2 = InMemoryDispatcher()
+        let dispatcher3 = InMemoryDispatcher()
+        
+        dispatcher1.addToNextDispatchers(dispatcher2)
+        dispatcher1.addToNextDispatchers(dispatcher3)
+        dispatcher1.removeAllFromNextDispatchers()
+        
+        let nextDispatchers = dispatcher1.nextDispatchers()
+        #expect(nextDispatchers.isEmpty)
+    }
+    
+    @Test("Message forwarding to next dispatcher")
+    func messageForwardingToNextDispatcher() async {
+        let dispatcher1 = InMemoryDispatcher()
+        let dispatcher2 = InMemoryDispatcher()
+        
+        dispatcher1.addToNextDispatchers(dispatcher2)
+        
+        let message = Message(payload: .key(key: "test"), priority: .info)
+        try? await dispatcher1.handle(message)
+        
+        let logs1 = await dispatcher1.getAllLogs()
+        let logs2 = await dispatcher2.getAllLogs()
+        
+        #expect(logs1.count == 1)
+        #expect(logs2.count == 1)
+    }
+}
+
 // MARK: - Test Helpers
 
 class DispatcherDelegateExample: MessageDispatchingDelegate {
