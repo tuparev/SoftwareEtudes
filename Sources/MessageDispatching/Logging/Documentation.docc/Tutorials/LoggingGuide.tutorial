@@ -86,4 +86,19 @@
             }
         }
     }
+
+    @Section(title: "In-Memory Logging (Testing & Diagnostics)") {
+        @ContentAndMedia {
+            Use an in-memory dispatcher to capture logs without writing to disk or external services.
+            This is ideal for unit tests, previews, and diagnostics where you want to inspect emitted messages.
+        }
+        
+        @Steps {
+            @Step {
+                Create an in-memory dispatcher and bootstrap logging.
+                
+                @Code(name: "InMemoryLogging.swift", file: "InMemoryLogging.swift")
+            }
+        }
+    }
 }

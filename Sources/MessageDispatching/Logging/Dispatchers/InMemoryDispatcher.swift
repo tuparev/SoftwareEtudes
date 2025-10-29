@@ -8,10 +8,19 @@
 import Foundation
 import SoftwareEtudesCoreMessageDispatching
 
+/// An in-memory message dispatcher.
+///
+/// Stores dispatched ``Message`` values in a bounded buffer for later inspection.
+/// Useful for testing, diagnostics, and ephemeral logging where persistence is not required.
 public final class InMemoryDispatcher: MessageDispatching {
     
     public var dispatcherDelegate: MessageDispatchingDelegate?
     
+    /// Creates an in-memory dispatcher.
+    ///
+    /// - Parameters:
+    ///   - capacity: Maximum number of messages to retain in a circular buffer. Oldest are discarded first.
+    ///   - priorities: The set of allowed message priorities to accept.
     public init(capacity: Int = 100,
                 priorities: Set<MessagePriority> = [.debug, .info, .normal, .low, .background, .high, .critical]) {
         self.capacity = capacity
@@ -33,10 +42,12 @@ public final class InMemoryDispatcher: MessageDispatching {
         await messageActor.getLogs(priorities: priorities)
     }
     
+    /// Returns stored messages whose textual description contains the given text (case-insensitive).
     public func searchLogs(text: String) async -> [Message] {
         await messageActor.searchLogs(text: text)
     }
     
+    /// Currently messages do not carry timestamps; this method returns all messages.
     public func filterLogs(newerThan date: Date) async -> [Message] {
         // $$$GT
         // Note: Messages don't have built-in timestamps, so this is not supported
@@ -44,7 +55,6 @@ public final class InMemoryDispatcher: MessageDispatching {
         await messageActor.filterLogs(newerThan: date)
     }
     
-    /// Clears all stored logs
     public func clear() async {
         await messageActor.clear()
     }

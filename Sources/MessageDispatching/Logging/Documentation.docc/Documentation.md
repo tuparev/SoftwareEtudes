@@ -26,6 +26,7 @@ The SoftwareEtudes Logging Framework provides multiple dispatch targets with pri
 - ``FileDispatcher``
 - ``NetworkDispatcher``
 - ``OSLogDispatcher``
+- ``InMemoryDispatcher``
 
 ### Tutorials
 
