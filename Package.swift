@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
         .library(name: "SoftwareEtudesLogging",                 targets: ["SoftwareEtudesLogging"]),
         .library(name: "SoftwareEtudesCoreMessageDispatching",  targets: ["SoftwareEtudesCoreMessageDispatching"]),
+        .executable(name: "logging-sandbox", targets: ["LoggingSandbox"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
@@ -40,5 +41,12 @@ let package = Package(
         .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
         .testTarget(name: "SoftwareEtudesLoggingTests",                 dependencies: ["SoftwareEtudesLogging"],                 path: "Tests/MessageDispatching/Logging"),
         .testTarget(name: "SoftwareEtudesCoreMessageDispatchingTests",  dependencies: ["SoftwareEtudesCoreMessageDispatching"],  path: "Tests/MessageDispatching/CoreMessageDispatching"),
+        .executableTarget(
+            name: "LoggingSandbox",
+            dependencies: [
+                .target(name: "SoftwareEtudesLogging")
+            ],
+            path: "Sources/LoggingSandbox"
+        ),
     ]
 )
