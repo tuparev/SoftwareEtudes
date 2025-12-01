@@ -19,7 +19,7 @@ import Foundation
 /// readable JSON notation.
 ///
 ///  For complete description check the official definition of [Semantic Versioning](https://semver.org)
-public struct SemanticVersion: Equatable, CustomStringConvertible, CustomDebugStringConvertible, Codable, Hashable {
+public struct SemanticVersion: Equatable, CustomStringConvertible, CustomDebugStringConvertible, Codable, Hashable, Sendable {
 
     /// Checks if a string is proper version string
     ///
