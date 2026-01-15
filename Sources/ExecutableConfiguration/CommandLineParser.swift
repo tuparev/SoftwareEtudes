@@ -104,7 +104,7 @@ open class CommandLineParser: Configuring {
 
     public func setAllowedArguments(_ arguments: [String]) throws {
         for anArgument in arguments {
-            if !anArgument.hasPrefix("--") || !anArgument.hasPrefix("-")  { throw CommandLineParserError.invalidArgumentFormat }
+            if !(anArgument.hasPrefix("--") || anArgument.hasPrefix("-"))  { throw CommandLineParserError.invalidArgumentFormat }
         }
 
         self.allowedArguments = arguments
