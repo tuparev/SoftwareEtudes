@@ -76,7 +76,9 @@ import Foundation
 
 open class CommandLineParser: Configuring {
 
-
+    public enum CommandLineParserError: Error {
+        case invalidArgumentFormat // Argument should start either with "-" or "--"
+    }
 
     public var assumeFirstArgumentAsUtilityName = true
 
@@ -98,6 +100,14 @@ open class CommandLineParser: Configuring {
     public var shortDescription: String? {
         _ = parse()
         return documentation.shortDescription
+    }
+
+    public func setAllowedArguments(_ arguments: [String]) throws {
+        for anArgument in arguments {
+            if !anArgument.hasPrefix("--") || !anArgument.hasPrefix("-")  { throw CommandLineParserError.invalidArgumentFormat }
+        }
+
+        self.allowedArguments = arguments
     }
 
     public func parse() -> Bool {  //TODO: Should return a Result type
@@ -127,6 +137,7 @@ open class CommandLineParser: Configuring {
     private var currentArguments:[String]!
     private var originalArguments: [String]!
     private var documentation = UtilityDocumentation()
+    private var allowedArguments: [String]?
 
     private var didParse    = false
     private var parseResult = true
