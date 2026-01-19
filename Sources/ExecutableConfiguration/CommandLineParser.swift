@@ -103,7 +103,7 @@ open class CommandLineParser: Configuring {
     }
 
     public func setAllowedArguments(_ arguments: [String]) throws {
-        for anArgument in arguments {
+        for anArgument in originalArguments {
             if !(anArgument.hasPrefix("--") || anArgument.hasPrefix("-")) { throw CommandLineParserError.invalidArgumentFormat }
             guard let index = arguments.firstIndex(of: anArgument) else   { throw CommandLineParserError.invalidArgumentFormat }
         }
