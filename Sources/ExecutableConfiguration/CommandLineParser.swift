@@ -74,6 +74,20 @@ import Foundation
  - POSIX arguments: http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html
  */
 
+
+public protocol CommandLineParserDelegate {
+    func processWillTerminate() -> Bool
+}
+
+public extension CommandLineParserDelegate {
+    func processWillTerminate() -> Bool { true }
+}
+
+public struct CommandLineParserNotifications {
+    public static var processWillTerminateNotification: Notification.Name = .init("processWillTerminate")
+}
+
+
 open class CommandLineParser: Configuring {
 
     public enum CommandLineParserError: Error {
@@ -81,7 +95,8 @@ open class CommandLineParser: Configuring {
     }
 
     public var assumeFirstArgumentAsUtilityName = true
-
+    public var commandLineParserDelegate: CommandLineParserDelegate?
+    
     public init?(arguments: [String] = CommandLine.arguments) {
         guard !arguments.isEmpty else { return nil } //TODO: LOG.error!
 
@@ -134,6 +149,16 @@ open class CommandLineParser: Configuring {
 
         //TODO: LOG.info
         return parseResult
+    }
+
+    public func prepareProcessForTermination() {
+        if let delegate = commandLineParserDelegate {
+            //TODO: In the future try to call the method multiple (N) times or until `true`
+            _ = delegate.processWillTerminate()
+        }
+        let nc = NotificationCenter.default
+        nc.post(name: CommandLineParserNotifications.processWillTerminateNotification, object: self)
+        //TODO: Implement me!
     }
 
     private var currentArguments:[String]!
