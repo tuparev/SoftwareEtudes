@@ -155,7 +155,7 @@ private actor FileActor {
 
 /// A dispatcher that writes log Messages to a file, handling rotation, and forwarding downstream.
 /// Thread-safe implementation using actor for file operations.
-public final class FileDispatcher: MessageDispatching {
+public final class FileDispatcher: MessageDispatching, @unchecked Sendable {
     // MARK: MessageDispatching
     public var dispatcherDelegate: MessageDispatchingDelegate?
     private var children: [MessageDispatching] = []
