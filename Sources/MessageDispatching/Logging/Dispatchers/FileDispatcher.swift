@@ -154,22 +154,55 @@ private actor FileActor {
 }
 
 /// A dispatcher that writes log Messages to a file, handling rotation, and forwarding downstream.
-/// Thread-safe implementation using actor for file operations.
-public final class FileDispatcher: MessageDispatching, @unchecked Sendable {
-    // MARK: MessageDispatching
-    public var dispatcherDelegate: MessageDispatchingDelegate?
-    private var children: [MessageDispatching] = []
+/// Thread-safe implementation using actor for file operations and NSLock for mutable state.
+public final class FileDispatcher: MessageDispatching, Sendable {
     
-    public func nextDispatchers() -> [MessageDispatching] { children }
-    public func addToNextDispatchers(_ dispatcher: MessageDispatching) { children.append(dispatcher) }
-    public func removeFromNextDispatchers(_ dispatcher: MessageDispatching) {
-        children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
+    // Thread-safe state management using NSLock
+    private let stateLock = NSLock()
+    private var _delegate: MessageDispatchingDelegate?
+    private var _children: [MessageDispatching] = []
+    
+    // MARK: MessageDispatching
+    public var dispatcherDelegate: MessageDispatchingDelegate? {
+        get {
+            stateLock.lock()
+            defer { stateLock.unlock() }
+            return _delegate
+        }
+        set {
+            stateLock.lock()
+            defer { stateLock.unlock() }
+            _delegate = newValue
+        }
     }
-    public func removeAllFromNextDispatchers() { children.removeAll() }
+    
+    public func nextDispatchers() -> [MessageDispatching] {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        return _children
+    }
+    
+    public func addToNextDispatchers(_ dispatcher: MessageDispatching) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        _children.append(dispatcher)
+    }
+    
+    public func removeFromNextDispatchers(_ dispatcher: MessageDispatching) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        _children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
+    }
+    
+    public func removeAllFromNextDispatchers() {
+        stateLock.lock()
+        defer { stateLock.unlock() }
+        _children.removeAll()
+    }
     
     // File operations actor for thread safety
     private let fileActor: FileActor
-    private let isoFormatter: ISO8601DateFormatter = {
+    private nonisolated(unsafe) let isoFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
         return formatter
@@ -195,7 +228,7 @@ public final class FileDispatcher: MessageDispatching, @unchecked Sendable {
     /// Handles a single Message: applies filters, writes entry with thread safety,
     /// and forwards downstream.
     public func handle(_ message: Message) async throws {
-        // 1) Top-level filters
+        // 1) Top-level filters (thread-safe read)
         if let del = dispatcherDelegate {
             guard del.shouldDispatchMessage(message),
                   del.shouldDispatchMessageWithPriority(message.priority)
@@ -215,7 +248,8 @@ public final class FileDispatcher: MessageDispatching, @unchecked Sendable {
             // Consider adding fallback mechanism here
         }
         
-        // 4) Forward to downstream dispatchers
+        // 4) Forward to downstream dispatchers (thread-safe read)
+        let children = nextDispatchers()
         for child in children {
             do {
                 try await child.handle(message)
