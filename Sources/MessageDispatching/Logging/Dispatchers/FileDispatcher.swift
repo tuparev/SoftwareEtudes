@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Synchronization
 import SoftwareEtudesCoreMessageDispatching
 
 /// Thread-safe file operations actor with buffering
@@ -154,50 +155,43 @@ private actor FileActor {
 }
 
 /// A dispatcher that writes log Messages to a file, handling rotation, and forwarding downstream.
-/// Thread-safe implementation using actor for file operations and NSLock for mutable state.
+/// Thread-safe implementation using actor for file operations and Mutex for mutable state.
 public final class FileDispatcher: MessageDispatching, Sendable {
     
-    // Thread-safe state management using NSLock
-    private let stateLock = NSLock()
-    private var _delegate: MessageDispatchingDelegate?
-    private var _children: [MessageDispatching] = []
+    // Thread-safe state management using Mutex
+    private struct State {
+        var delegate: MessageDispatchingDelegate?
+        var children: [MessageDispatching]
+    }
+    
+    private let state = Mutex(State(delegate: nil, children: []))
     
     // MARK: MessageDispatching
     public var dispatcherDelegate: MessageDispatchingDelegate? {
         get {
-            stateLock.lock()
-            defer { stateLock.unlock() }
-            return _delegate
+            state.withLock { $0.delegate }
         }
         set {
-            stateLock.lock()
-            defer { stateLock.unlock() }
-            _delegate = newValue
+            state.withLock { $0.delegate = newValue }
         }
     }
     
     public func nextDispatchers() -> [MessageDispatching] {
-        stateLock.lock()
-        defer { stateLock.unlock() }
-        return _children
+        state.withLock { $0.children }
     }
     
     public func addToNextDispatchers(_ dispatcher: MessageDispatching) {
-        stateLock.lock()
-        defer { stateLock.unlock() }
-        _children.append(dispatcher)
+        state.withLock { $0.children.append(dispatcher) }
     }
     
     public func removeFromNextDispatchers(_ dispatcher: MessageDispatching) {
-        stateLock.lock()
-        defer { stateLock.unlock() }
-        _children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
+        state.withLock { 
+            $0.children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
+        }
     }
     
     public func removeAllFromNextDispatchers() {
-        stateLock.lock()
-        defer { stateLock.unlock() }
-        _children.removeAll()
+        state.withLock { $0.children.removeAll() }
     }
     
     // File operations actor for thread safety
