@@ -68,14 +68,14 @@ public protocol MessageArgumentSensitivityDescribing: Codable {
 /// Typically, you assign `DefaultMessageArgumentSensitivityProvider` to a property
 /// like:
 /// ```swift
-/// Message.argumentSensitivityProvider = DefaultMessageArgumentSensitivityProvider()
+///     Message.argumentSensitivityProvider = DefaultMessageArgumentSensitivityProvider()
 /// ```
 /// Then, when building or transforming your messages, you can call:
 /// ```swift
-/// let updatedArgs = Message.argumentSensitivityProvider.makeSensitive(
-///     arguments: originalArgs,
-///     sensitiveKeys: ["token", "password"]
-/// )
+///     let updatedArgs = Message.argumentSensitivityProvider.makeSensitive(
+///        arguments: originalArgs,
+///        sensitiveKeys: ["token", "password"]
+///     )
 /// ```
 public struct DefaultMessageArgumentSensitivityProvider: MessageArgumentSensitivityDescribing {
     
@@ -89,10 +89,10 @@ public struct DefaultMessageArgumentSensitivityProvider: MessageArgumentSensitiv
     /// Creates an instance of `DefaultMessageArgumentSensitivityProvider`.
     /// You can override the prefix values if desired:
     /// ```swift
-    /// let provider = DefaultMessageArgumentSensitivityProvider(
-    ///     sensitivityArgumentPrefix: "sensitive:",
-    ///     privateArgumentPrefix: "private:"
-    /// )
+    ///     let provider = DefaultMessageArgumentSensitivityProvider(
+    ///        sensitivityArgumentPrefix: "sensitive:",
+    ///        privateArgumentPrefix: "private:"
+    ///     )
     /// ```
     public init(sensitivityArgumentPrefix: String = "?", privateArgumentPrefix: String = "!") {
         self.sensitivityArgumentPrefix = sensitivityArgumentPrefix

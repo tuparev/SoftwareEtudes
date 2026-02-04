@@ -7,14 +7,16 @@
 
 import Foundation
 /**
+ ```
  [ RootDispatcher ]
  ↓
  [ TemplateDispatcher ]     ←–– handles JSON lookup + placeholder substitution
  ↓
- ┌───────┬────────┬────────────┬───────────────┐
- │ Console│  File  │   OSLog    │   Remote      │
- │Dispatcher│Dispatcher│Dispatcher│Dispatcher   │
- └───────┴────────┴────────────┴───────────────┘
+ ┌─────-─--─┬────--────┬────────────┬───────────────┐
+ │  Console │   File   │   OSLog    │    Remote     │
+ │Dispatcher│Dispatcher│ Dispatcher │  Dispatcher   │
+ └──────---─┴────────--┴────────────┴───────────────┘
+ ```
  **/
 
 /// A dispatcher that formats messages using JSON templates, then forwards them downstream.
@@ -36,10 +38,8 @@ public final class TemplateDispatcher: AbstractMessageDispatcher {
         // 2) Select the correct template
         let rawTemplate: String = {
             switch message.payload {
-                case .code(let code):
-                    return lookupCodedTemplate(code: code)
-                case .key(let key):
-                    return lookupKeyedTemplate(key: key)
+                case .code(let code): return lookupCodedTemplate(code: code)
+                case .key(let key):   return lookupKeyedTemplate(key: key)
             }
         }()
         
