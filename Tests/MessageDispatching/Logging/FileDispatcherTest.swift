@@ -105,7 +105,6 @@ fileprivate class DelegateExample: MessageDispatchingDelegate {
 }
 
 // MARK: - Test Suite
-
 @Suite("FileDispatcher Initialisation Tests")
 struct FileDispatcherInitialisationTests {
     
