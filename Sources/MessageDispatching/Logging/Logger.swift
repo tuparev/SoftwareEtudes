@@ -18,20 +18,24 @@ open class Logger: LogHandler {
     
     /// Notification name for process termination - triggers flush on dispatchers
     public static let willTerminateNotification = Notification.Name("SoftwareEtudesLogger.WillTerminate")
+    
+    /// Observer token that must be retained for the notification observer to work
+    private var terminationObserver: NSObjectProtocol?
 
     public init(logLevel: Logging.Logger.Level = .info, metadata: Logging.Logger.Metadata = [:], dispatchers: [MessageDispatching] = []) {
         self.logLevel = logLevel
         self.metadata = metadata
         self.dispatchers = dispatchers
         
-        // Observe termination notification to flush FileDispatcher's buffer
-        NotificationCenter.default.addObserver(forName: Self.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
+        terminationObserver = NotificationCenter.default.addObserver(forName: Self.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
             self?.flushDispatchers()
         }
     }
     
     deinit {
-        NotificationCenter.default.removeObserver(self)
+        if let observer = terminationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
     
     /// Calls FileDispatcher.flush() to write buffered logs (50-log buffer with 2-second auto-flush)
