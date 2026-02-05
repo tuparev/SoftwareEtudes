@@ -39,9 +39,9 @@ open class Logger: LogHandler {
         let semaphore = DispatchSemaphore(value: 0)
         Task.detached { [dispatchers] in
             for dispatcher in dispatchers {
-                if let fileDispatcher = dispatcher as? FileDispatcher {
-                    try? await fileDispatcher.flush()
-                }
+//                if let fileDispatcher = dispatcher as? FileDispatcher {
+//                    try? await fileDispatcher.flush()
+//                }
             }
             semaphore.signal()
         }

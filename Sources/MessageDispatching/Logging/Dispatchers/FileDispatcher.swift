@@ -156,114 +156,114 @@ private actor FileActor {
 
 /// A dispatcher that writes log Messages to a file, handling rotation, and forwarding downstream.
 /// Thread-safe implementation using actor for file operations and Mutex for mutable state.
-public final class FileDispatcher: MessageDispatching, Sendable {
-    
-    // Thread-safe state management using Mutex
-    private struct State {
-        var delegate: MessageDispatchingDelegate?
-        var children: [MessageDispatching]
-    }
-    
-    private let state = Mutex(State(delegate: nil, children: []))
-    
-    // MARK: MessageDispatching
-    public var dispatcherDelegate: MessageDispatchingDelegate? {
-        get {
-            state.withLock { $0.delegate }
-        }
-        set {
-            state.withLock { $0.delegate = newValue }
-        }
-    }
-    
-    public func nextDispatchers() -> [MessageDispatching] {
-        state.withLock { $0.children }
-    }
-    
-    public func addToNextDispatchers(_ dispatcher: MessageDispatching) {
-        state.withLock { $0.children.append(dispatcher) }
-    }
-    
-    public func removeFromNextDispatchers(_ dispatcher: MessageDispatching) {
-        state.withLock { 
-            $0.children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
-        }
-    }
-    
-    public func removeAllFromNextDispatchers() {
-        state.withLock { $0.children.removeAll() }
-    }
-    
+//public final class FileDispatcher: MessageDispatching, Sendable {
+//    
+//    // Thread-safe state management using Mutex
+//    private struct State {
+//        var delegate: MessageDispatchingDelegate?
+//        var children: [MessageDispatching]
+//    }
+//
+//    private let state = Mutex(State(delegate: nil, children: []))
+//    
+//    // MARK: MessageDispatching
+//    public var dispatcherDelegate: MessageDispatchingDelegate? {
+//        get {
+//            state.withLock { $0.delegate }
+//        }
+//        set {
+//            state.withLock { $0.delegate = newValue }
+//        }
+//    }
+//    
+//    public func nextDispatchers() -> [MessageDispatching] {
+//        state.withLock { $0.children }
+//    }
+//    
+//    public func addToNextDispatchers(_ dispatcher: MessageDispatching) {
+//        state.withLock { $0.children.append(dispatcher) }
+//    }
+//    
+//    public func removeFromNextDispatchers(_ dispatcher: MessageDispatching) {
+//        state.withLock { 
+//            $0.children.removeAll { ($0 as AnyObject) === (dispatcher as AnyObject) }
+//        }
+//    }
+//    
+//    public func removeAllFromNextDispatchers() {
+//        state.withLock { $0.children.removeAll() }
+//    }
+//    
     // File operations actor for thread safety
-    private let fileActor: FileActor
-    private nonisolated(unsafe) let isoFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter
-    }()
-    
-    /// Initialise with a file URL, rotation size threshold, and maximum backups.
-    /// - Parameters:
-    ///   - fileURL: location to write logs
-    ///   - maxFileSize: size in bytes at which to rotate (default 10 MiB)
-    ///   - maxBackupCount: number of rotated files to keep (default 5)
-    public init(
-        fileURL: URL,
-        maxFileSize: UInt64 = 10 * 1024 * 1024,
-        maxBackupCount: Int = 5
-    ) throws {
-        self.fileActor = try FileActor(
-            fileURL: fileURL,
-            maxFileSize: maxFileSize,
-            maxBackupCount: maxBackupCount
-        )
-    }
-    
-    /// Handles a single Message: applies filters, writes entry with thread safety,
-    /// and forwards downstream.
-    public func handle(_ message: Message) async throws {
-        // 1) Top-level filters (thread-safe read)
-        if let del = dispatcherDelegate {
-            guard del.shouldDispatchMessage(message),
-                  del.shouldDispatchMessageWithPriority(message.priority)
-            else { return }
-        }
-        
-        // 2) Prepare log entry (lazy evaluation - only if we pass filters)
-        let timestamp = isoFormatter.string(from: Date())
-        let entry = "[\(timestamp)] \(message.description)\n"
-        
-        // 3) Thread-safe write through actor
-        do {
-            try await fileActor.writeEntry(entry)
-        } catch {
-            // Log write failure but don't prevent downstream processing
-            print("FileDispatcher: Failed to write log entry - \(error)")
-            // Consider adding fallback mechanism here
-        }
-        
-        // 4) Forward to downstream dispatchers (thread-safe read)
-        let children = nextDispatchers()
-        for child in children {
-            do {
-                try await child.handle(message)
-            } catch {
-                // Log child dispatcher failure but don't prevent other children from processing
-                print("FileDispatcher: Child dispatcher failed to handle message - \(error)")
-            }
-        }
-    }
-    
-    /// Manually flush any buffered log entries to disk
-    public func flush() async throws {
-        try await fileActor.flush()
-    }
-    
-    deinit {
-        // Capture fileActor locally to avoid retaining self in the Task
-        let actor = fileActor
-        Task.detached {
-            try? await actor.close()
-        }
-    }
-}
+//    private let fileActor: FileActor
+//    private nonisolated(unsafe) let isoFormatter: ISO8601DateFormatter = {
+//        let formatter = ISO8601DateFormatter()
+//        formatter.formatOptions = [.withInternetDateTime]
+//        return formatter
+//    }()
+//    
+//    /// Initialise with a file URL, rotation size threshold, and maximum backups.
+//    /// - Parameters:
+//    ///   - fileURL: location to write logs
+//    ///   - maxFileSize: size in bytes at which to rotate (default 10 MiB)
+//    ///   - maxBackupCount: number of rotated files to keep (default 5)
+//    public init(
+//        fileURL: URL,
+//        maxFileSize: UInt64 = 10 * 1024 * 1024,
+//        maxBackupCount: Int = 5
+//    ) throws {
+//        self.fileActor = try FileActor(
+//            fileURL: fileURL,
+//            maxFileSize: maxFileSize,
+//            maxBackupCount: maxBackupCount
+//        )
+//    }
+//    
+//    /// Handles a single Message: applies filters, writes entry with thread safety,
+//    /// and forwards downstream.
+//    public func handle(_ message: Message) async throws {
+//        // 1) Top-level filters (thread-safe read)
+//        if let del = dispatcherDelegate {
+//            guard del.shouldDispatchMessage(message),
+//                  del.shouldDispatchMessageWithPriority(message.priority)
+//            else { return }
+//        }
+//        
+//        // 2) Prepare log entry (lazy evaluation - only if we pass filters)
+//        let timestamp = isoFormatter.string(from: Date())
+//        let entry = "[\(timestamp)] \(message.description)\n"
+//        
+//        // 3) Thread-safe write through actor
+//        do {
+//            try await fileActor.writeEntry(entry)
+//        } catch {
+//            // Log write failure but don't prevent downstream processing
+//            print("FileDispatcher: Failed to write log entry - \(error)")
+//            // Consider adding fallback mechanism here
+//        }
+//        
+//        // 4) Forward to downstream dispatchers (thread-safe read)
+//        let children = nextDispatchers()
+//        for child in children {
+//            do {
+//                try await child.handle(message)
+//            } catch {
+//                // Log child dispatcher failure but don't prevent other children from processing
+//                print("FileDispatcher: Child dispatcher failed to handle message - \(error)")
+//            }
+//        }
+//    }
+//    
+//    /// Manually flush any buffered log entries to disk
+//    public func flush() async throws {
+//        try await fileActor.flush()
+//    }
+//    
+//    deinit {
+//        // Capture fileActor locally to avoid retaining self in the Task
+//        let actor = fileActor
+//        Task.detached {
+//            try? await actor.close()
+//        }
+//    }
+//}
