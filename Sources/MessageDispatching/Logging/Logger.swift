@@ -15,11 +15,37 @@ open class Logger: LogHandler {
     public var dispatchers: [MessageDispatching] = []
     public var metadata: Logging.Logger.Metadata
     public var logLevel: Logging.Logger.Level
+    
+    /// Notification name for process termination - triggers flush on dispatchers
+    public static let willTerminateNotification = Notification.Name("SoftwareEtudesLogger.WillTerminate")
 
     public init(logLevel: Logging.Logger.Level = .info, metadata: Logging.Logger.Metadata = [:], dispatchers: [MessageDispatching] = []) {
         self.logLevel = logLevel
         self.metadata = metadata
         self.dispatchers = dispatchers
+        
+        // Observe termination notification to flush FileDispatcher's buffer
+        NotificationCenter.default.addObserver(forName: Self.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
+            self?.flushDispatchers()
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    /// Calls FileDispatcher.flush() to write buffered logs (50-log buffer with 2-second auto-flush)
+    private func flushDispatchers() {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task.detached { [dispatchers] in
+            for dispatcher in dispatchers {
+                if let fileDispatcher = dispatcher as? FileDispatcher {
+                    try? await fileDispatcher.flush()
+                }
+            }
+            semaphore.signal()
+        }
+        _ = semaphore.wait(timeout: .now() + 5.0)
     }
     
     // MARK: - Swift-Log API (zero-cost disabled logs)
@@ -79,4 +105,3 @@ open class Logger: LogHandler {
         }
     }
 }
-
