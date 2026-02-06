@@ -49,15 +49,11 @@ public final class OSLogDispatcher: MessageDispatching {
             if includeDetailedInfo {
                 // Detailed logging with all message components
                 let arguments      = message.arguments?.description ?? "<nil>"
-                let actions        = message.actions?.description ?? "<nil>"
-                let formattingInfo = message.formattingInfo?.description ?? "<nil>"
                 
                 os_log(
-                    "Payload: %{public}@ | Priority: %{public}@ | Arguments: %{public}@ | Actions: %{public}@ | FormattingInfo: %{public}@",
-                    log: logHandle, type: level, payload, priority, arguments, actions, formattingInfo
-                )
+                    "Payload: %{public}@ | Priority: %{public}@ | Arguments: %{public}@",
+                    log: logHandle, type: level, payload, priority, arguments)
             } else {
-                // Simplified logging for better performance
                 os_log(
                     "Payload: %{public}@ | Priority: %{public}@",
                     log: logHandle, type: level, payload, priority
