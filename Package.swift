@@ -50,5 +50,5 @@ let package = Package(
 //            path: "Sources/LoggingSandbox"
 //        ),
     ],
-    swiftLanguageModes: [.v5]
+//    swiftLanguageModes: [.v5]
 )
