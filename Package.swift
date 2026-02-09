@@ -1,4 +1,4 @@
-// swift-tools-version: 5.10
+// swift-tools-version: 5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,14 +6,15 @@ import PackageDescription
 let package = Package(
     name: "SoftwareEtudes",
     defaultLocalization: "en",
-    platforms: [.macOS(.v14), .iOS(.v18), .tvOS(.v18), .watchOS(.v11), .visionOS(.v1)],
+//    platforms: [.macOS(.v14), .iOS(.v18), .tvOS(.v18), .watchOS(.v11), .visionOS(.v1)],
+    platforms: [.macOS(.v14), .iOS(.v18),],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(name:    "SoftwareEtudesUtilities",               targets: ["SoftwareEtudesUtilities"]),
         .library(name:    "SoftwareEtudesExecutableConfiguration", targets: ["SoftwareEtudesExecutableConfiguration"]),
 //        .library(name:    "SoftwareEtudesLogging",                 targets: ["SoftwareEtudesLogging"]),
 //        .library(name:    "SoftwareEtudesCoreMessageDispatching",  targets: ["SoftwareEtudesCoreMessageDispatching"]),
-        .executable(name: "logging-sandbox",                       targets: ["LoggingSandbox"]),
+//        .executable(name: "logging-sandbox",                       targets: ["LoggingSandbox"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git",     from: "1.0.0"),
@@ -41,13 +42,13 @@ let package = Package(
         .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
 //        .testTarget(name: "SoftwareEtudesLoggingTests",                 dependencies: ["SoftwareEtudesLogging"],                 path: "Tests/MessageDispatching/Logging"),
 //        .testTarget(name: "SoftwareEtudesCoreMessageDispatchingTests",  dependencies: ["SoftwareEtudesCoreMessageDispatching"],  path: "Tests/MessageDispatching/CoreMessageDispatching"),
-        .executableTarget(
-            name: "LoggingSandbox",
-            dependencies: [
-                .target(name: "SoftwareEtudesLogging")
-            ],
-            path: "Sources/LoggingSandbox"
-        ),
+//        .executableTarget(
+//            name: "LoggingSandbox",
+//            dependencies: [
+//                .target(name: "SoftwareEtudesLogging")
+//            ],
+//            path: "Sources/LoggingSandbox"
+//        ),
     ],
     swiftLanguageModes: [.v5]
 )
