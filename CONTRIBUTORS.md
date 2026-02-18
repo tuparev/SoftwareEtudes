@@ -8,6 +8,7 @@ SoftwareEtudes project.
 ## COPYRIGHT HOLDERS
 
 - Tuparev Technologies (all contributors with '@tuparev.com')
+- Hunter Wiliam Holland
 
 ## Contributors
 

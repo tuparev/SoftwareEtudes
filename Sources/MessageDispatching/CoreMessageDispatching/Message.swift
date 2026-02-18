@@ -4,7 +4,7 @@
 //
 // This source file is part of the SoftwareEtudes open source project
 //
-// Copyright (c) 2020-2025 Tuparev Technologies and Friends
+// Copyright (c) 2020-2026 Tuparev Technologies and Friends
 // Licensed under MIT License Modern Variant
 //
 // See LICENSE for license information
