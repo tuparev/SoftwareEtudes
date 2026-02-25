@@ -43,21 +43,17 @@ public final class OSLogDispatcher: MessageDispatching {
         
         // Performance optimisation: Only convert to strings if logging is enabled for this level
         if logHandle.isEnabled(type: level) {
-            let payload  = String(describing: message.payload)
-            let priority = String(describing: message.priority)
-            
-            if includeDetailedInfo {
-                // Detailed logging with all message components
-                let arguments      = message.arguments?.description ?? "<nil>"
-                
-                os_log(
-                    "Payload: %{public}@ | Priority: %{public}@ | Arguments: %{public}@",
-                    log: logHandle, type: level, payload, priority, arguments)
+            let body: String = {
+                switch message.payload {
+                case .key(let key):   return key
+                case .code(let code): return "\(code)"
+                }
+            }()
+
+            if includeDetailedInfo, let arguments = message.arguments, !arguments.isEmpty {
+                os_log("%{public}@ | %{public}@", log: logHandle, type: level, body, arguments.description)
             } else {
-                os_log(
-                    "Payload: %{public}@ | Priority: %{public}@",
-                    log: logHandle, type: level, payload, priority
-                )
+                os_log("%{public}@", log: logHandle, type: level, body)
             }
         }
         
