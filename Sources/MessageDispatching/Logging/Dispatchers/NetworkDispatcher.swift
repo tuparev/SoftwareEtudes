@@ -181,7 +181,6 @@ public final class NetworkDispatcher: MessageDispatching {
         let messageData = messages.map { message in
             var messageDict: [String: Any]        = [
                 "payload": message.payload.description,
-                "priority": message.priority.description,
                 "timestamp": ISO8601DateFormatter().string(from: Date())
             ]
             

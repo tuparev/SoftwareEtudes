@@ -23,7 +23,7 @@ public final class ConsoleDispatcher: MessageDispatching {
     ///   - showFullMessage: Whether to show complete multi-line messages or just the first line.
     ///   - customColors: Optional custom colour mapping for priority levels.
     ///
-    public init(template: String = "[{timestamp}] [{level}] {message}",
+    public init(template: String = "[{timestamp}] {message}",
                 priorities: Set<MessagePriority> = [.debug, .info, .normal, .low, .background, .high, .critical],
                 enableColours: Bool? = nil,
                 showFullMessage: Bool = false,
@@ -61,8 +61,12 @@ public final class ConsoleDispatcher: MessageDispatching {
         // 3) Prepare template variables
         let now = Date()
         let level = message.priority.description
-        let body = showFullMessage ? message.description : 
-                   message.description.components(separatedBy: "\n").first ?? ""
+        let body: String = {
+            switch message.payload {
+            case .key(let key):   return key
+            case .code(let code): return "\(code)"
+            }
+        }()
         let code: String = {
             if case let .code(codeValue) = message.payload {
                 return "\(codeValue)"
