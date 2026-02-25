@@ -158,9 +158,11 @@ public final class ConsoleDispatcher: MessageDispatching {
     
     private static let resetColor = "\u{001B}[0;0m"
     
-    /// Auto-detect if colours should be used (TTY detection).
+    /// Auto-detect if colours should be used (TTY + environment detection).
     private static func shouldUseColors() -> Bool {
-        return isatty(STDOUT_FILENO) != 0
+        guard isatty(STDOUT_FILENO) != 0 else { return false }
+        let term = ProcessInfo.processInfo.environment["TERM"] ?? ""
+        return !term.isEmpty && term != "dumb"
     }
     
     /// Apply colour formatting to output based on priority.
