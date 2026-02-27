@@ -49,8 +49,7 @@ struct LoggingSandbox {
         }
         logger.critical("Database connection lost", metadata: ["host": "db.example.com", "port": "5432", "lastHeartbeat": "\(Date())"])
 
-        try? await Task.sleep(nanoseconds: 100_000_000)
-        consoleDispatcher.flush()
+        NotificationCenter.default.post(name: SoftwareEtudesLogging.Logger.willTerminateNotification, object: nil)
         
         print("\n=== Sandbox Complete ===\n")
     }
