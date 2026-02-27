@@ -67,6 +67,10 @@ public final class NetworkDispatcher: MessageDispatching {
     public func flush() async {
         await flushMessages()
     }
+
+    public func flushForTermination() async {
+        await flushMessages()
+    }
     
     // MARK: Private Properties
     private var children: [MessageDispatching]

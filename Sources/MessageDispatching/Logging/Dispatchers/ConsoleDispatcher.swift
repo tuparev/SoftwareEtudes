@@ -185,4 +185,8 @@ public final class ConsoleDispatcher: MessageDispatching {
     public func flush() {
         printQueue.sync {}
     }
+
+    public func flushForTermination() async {
+        flush()
+    }
 }

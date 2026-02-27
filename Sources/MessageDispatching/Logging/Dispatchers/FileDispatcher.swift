@@ -270,6 +270,10 @@ public final class FileDispatcher: MessageDispatching, Sendable {
     public func flush() async throws {
         try await fileActor.flush()
     }
+
+    public func flushForTermination() async {
+        try? await fileActor.flush()
+    }
     
     deinit {
         // Capture fileActor locally to avoid retaining self in the Task
