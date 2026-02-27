@@ -27,20 +27,22 @@ open class Logger: LogHandler {
     private let logContinuation: AsyncStream<Log>.Continuation
     private let logStream: AsyncStream<Log>
 
+    /// Retained so flushDispatchers() can await full drain before flushing.
+    private var drainTask: Task<Void, Never>?
+
     public init(logLevel: Logging.Logger.Level = .info, metadata: Logging.Logger.Metadata = [:], dispatchers: [MessageDispatching] = []) {
         self.logLevel = logLevel
         self.metadata = metadata
         self.dispatchers = dispatchers
 
-        // Build the stream before starting the drain task
         var continuation: AsyncStream<Log>.Continuation!
         logStream = AsyncStream<Log> { continuation = $0 }
         logContinuation = continuation
 
         // Single drain task — processes logs one by one in strict FIFO order.
-        // stays alive until finish() is called in deinit.
+        // Stored so we can await completion during termination flush.
         let stream = logStream
-        Task.detached { [weak self] in
+        drainTask = Task.detached { [weak self] in
             for await log in stream {
                 guard let self else { break }
                 await self.drain(log)
@@ -97,12 +99,20 @@ open class Logger: LogHandler {
 
     private func flushDispatchers() {
         let semaphore = DispatchSemaphore(value: 0)
-        Task.detached { [dispatchers] in
-            for dispatcher in dispatchers {
-//                if let fileDispatcher = dispatcher as? FileDispatcher {
-//                    try? await fileDispatcher.flush()
-//                }
+        Task.detached { [weak self] in
+            guard let self else { semaphore.signal(); return }
+
+            // 1. Stop accepting new logs
+            self.logContinuation.finish()
+
+            // 2. Wait for the drain task to finish processing all queued logs
+            await self.drainTask?.value
+
+            // 3. Flush each dispatcher's internal buffers
+            for dispatcher in self.dispatchers {
+                await dispatcher.flushForTermination()
             }
+
             semaphore.signal()
         }
         _ = semaphore.wait(timeout: .now() + 5.0)
