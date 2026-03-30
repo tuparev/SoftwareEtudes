@@ -67,6 +67,10 @@ public final class NetworkDispatcher: MessageDispatching {
     public func flush() async {
         await flushMessages()
     }
+
+    public func flushForTermination() async {
+        await flushMessages()
+    }
     
     // MARK: Private Properties
     private var children: [MessageDispatching]
@@ -181,7 +185,6 @@ public final class NetworkDispatcher: MessageDispatching {
         let messageData = messages.map { message in
             var messageDict: [String: Any]        = [
                 "payload": message.payload.description,
-                "priority": message.priority.description,
                 "timestamp": ISO8601DateFormatter().string(from: Date())
             ]
             

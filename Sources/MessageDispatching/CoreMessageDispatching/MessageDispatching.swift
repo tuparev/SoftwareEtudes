@@ -87,6 +87,17 @@ public protocol MessageDispatching: MessageHandling {
     /// After calling this, `nextDispatchers()` will be empty.
     ///
     func removeAllFromNextDispatchers()
+
+    /// Flushes any buffered output before process shutdown.
+    ///
+    /// Default implementation is a no-op — only override if the dispatcher
+    /// buffers output (e.g. file writes, network batches, print queues).
+    ///
+    func flushForTermination() async
+}
+
+public extension MessageDispatching {
+    func flushForTermination() async { }
 }
 
 /// An abstract base implementation of `MessageDispatching`.

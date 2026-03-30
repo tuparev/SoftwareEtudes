@@ -308,7 +308,6 @@ struct FileDispatcherMessageHandlingTests {
         // Then
         let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         #expect(fileContents.contains("Test message"))
-        #expect(fileContents.contains("INFO"))
     }
     
     @Test("FileDispatcher handles different message types")
@@ -331,8 +330,6 @@ struct FileDispatcherMessageHandlingTests {
         let fileContents = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         #expect(fileContents.contains("Key message"))
         #expect(fileContents.contains("404"))
-        #expect(fileContents.contains("DEBUG"))
-        #expect(fileContents.contains("CRITICAL"))
     }
     
     @Test("FileDispatcher handles multiple messages")
@@ -602,7 +599,6 @@ struct FileDispatcherFileOperationsTests {
         // Then - should not crash and should write something
         let fileContents    = try FileDispatcherTestHelpers.readFileContents(at: fileURL)
         #expect(!fileContents.isEmpty)
-        #expect(fileContents.contains("INFO"))
     }
     
     @Test("FileDispatcher preserves message order")

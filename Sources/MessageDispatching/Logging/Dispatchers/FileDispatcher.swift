@@ -237,7 +237,13 @@ public final class FileDispatcher: MessageDispatching, Sendable {
         
         // 2) Prepare log entry (lazy evaluation - only if we pass filters)
         let timestamp = isoFormatter.string(from: Date())
-        let entry = "[\(timestamp)] \(message.description)\n"
+        let body: String = {
+            switch message.payload {
+            case .key(let key):   return key
+            case .code(let code): return "\(code)"
+            }
+        }()
+        let entry = "[\(timestamp)] \(body)\n"
         
         // 3) Thread-safe write through actor
         do {
@@ -263,6 +269,10 @@ public final class FileDispatcher: MessageDispatching, Sendable {
     /// Manually flush any buffered log entries to disk
     public func flush() async throws {
         try await fileActor.flush()
+    }
+
+    public func flushForTermination() async {
+        try? await fileActor.flush()
     }
     
     deinit {

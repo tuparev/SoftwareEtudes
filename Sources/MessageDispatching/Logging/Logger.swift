@@ -19,40 +19,50 @@ open class Logger: LogHandler {
     /// Notification name for process termination - triggers flush on dispatchers
     public static let willTerminateNotification = Notification.Name("SoftwareEtudesLogger.WillTerminate")
     
-    /// Observer token that must be retained for the notification observer to work
     private var terminationObserver: NSObjectProtocol?
+
+    // MARK: - Internal Queueing
+
+    /// Stream continuation — thread-safe, `Sendable`, call `yield` from anywhere.
+    private let logContinuation: AsyncStream<Log>.Continuation
+    private let logStream: AsyncStream<Log>
+
+    /// Retained so flushDispatchers() can await full drain before flushing.
+    private var drainTask: Task<Void, Never>?
 
     public init(logLevel: Logging.Logger.Level = .info, metadata: Logging.Logger.Metadata = [:], dispatchers: [MessageDispatching] = []) {
         self.logLevel = logLevel
         self.metadata = metadata
         self.dispatchers = dispatchers
-        
+
+        var continuation: AsyncStream<Log>.Continuation!
+        logStream = AsyncStream<Log> { continuation = $0 }
+        logContinuation = continuation
+
+        // Single drain task — processes logs one by one in strict FIFO order.
+        // Stored so we can await completion during termination flush.
+        let stream = logStream
+        drainTask = Task.detached { [weak self] in
+            for await log in stream {
+                guard let self else { break }
+                await self.drain(log)
+            }
+        }
+
         terminationObserver = NotificationCenter.default.addObserver(forName: Self.willTerminateNotification, object: nil, queue: nil) { [weak self] _ in
             self?.flushDispatchers()
         }
     }
-    
+
     deinit {
+        logContinuation.finish()
         if let observer = terminationObserver {
             NotificationCenter.default.removeObserver(observer)
         }
     }
-    
-    /// Calls FileDispatcher.flush() to write buffered logs (50-log buffer with 2-second auto-flush)
-    private func flushDispatchers() {
-        let semaphore = DispatchSemaphore(value: 0)
-        Task.detached { [dispatchers] in
-            for dispatcher in dispatchers {
-//                if let fileDispatcher = dispatcher as? FileDispatcher {
-//                    try? await fileDispatcher.flush()
-//                }
-            }
-            semaphore.signal()
-        }
-        _ = semaphore.wait(timeout: .now() + 5.0)
-    }
-    
-    // MARK: - Swift-Log API (zero-cost disabled logs)
+
+    // MARK: - Swift-Log API
+
     public func log(level: Logging.Logger.Level,
                     message: Logging.Logger.Message,
                     metadata: Logging.Logger.Metadata?,
@@ -60,52 +70,51 @@ open class Logger: LogHandler {
                     file: String,
                     function: String,
                     line: UInt) {
-    
-        // 1) Global level gate
+
         guard level >= logLevel else { return }
-        
-        // 2) Use the factory to build a Log
-        let log = Log.make(level: level, message: message.description, metadata: metadata, source: source,file: file,
-                             function: function, line: line, dispatchers: self.dispatchers)
-        
-        // 3) Enqueue & trigger the drain
-        queue.async { [weak self] in
-            guard let self = self else { return }
-            self.logQueue.append(log)
-            self.handleLogQueue()
-        }
+
+        let log = Log.make(level: level, message: message.description, metadata: metadata,
+                           source: source, file: file, function: function, line: line,
+                           dispatchers: self.dispatchers)
+        logContinuation.yield(log)
     }
-    
+
     public subscript(metadataKey key: String) -> Logging.Logger.Metadata.Value? {
         get { return metadata[key] }
         set { metadata[key] = newValue }
     }
-    
-    // MARK: - Internal Queueing
-    /// Serial queue for synchronising access to `messageQueue`.
-    private let queue = DispatchQueue(label: "com.SoftwareEtudes.logger.queue")
-    /// In-memory buffer of Logs awaiting dispatch.
-    private var logQueue: [Log] = []
-    
-    private func handleLogQueue() {
-        
-        // 1) Snapshot & clear (we're already inside the queue, so no need for sync)
-        let logs = self.logQueue
-        self.logQueue.removeAll()
-        
-        // 2) Drain asynchronously
-        Task.detached {
-            for log in logs {
-                
-                let message = log.message
-                
-                for dispatcher in self.dispatchers {
-                    guard dispatcher.dispatcherDelegate?.shouldDispatchMessage(message) ?? true,
-                          dispatcher.dispatcherDelegate?.shouldDispatchMessageWithPriority(message.priority) ?? true
-                    else { continue }
-                    try? await dispatcher.handle(message)  //TODO: What happens is there is an exception?
-                }
-            }
+
+    // MARK: - Private
+
+    /// Dispatches a single log to all registered dispatchers in order.
+    private func drain(_ log: Log) async {
+        let message = log.message
+        for dispatcher in dispatchers {
+            guard dispatcher.dispatcherDelegate?.shouldDispatchMessage(message) ?? true,
+                  dispatcher.dispatcherDelegate?.shouldDispatchMessageWithPriority(message.priority) ?? true
+            else { continue }
+            try? await dispatcher.handle(message)  //TODO: What happens if there is an exception?
         }
+    }
+
+    private func flushDispatchers() {
+        let semaphore = DispatchSemaphore(value: 0)
+        Task.detached { [weak self] in
+            guard let self else { semaphore.signal(); return }
+
+            // 1. Stop accepting new logs
+            self.logContinuation.finish()
+
+            // 2. Wait for the drain task to finish processing all queued logs
+            await self.drainTask?.value
+
+            // 3. Flush each dispatcher's internal buffers
+            for dispatcher in self.dispatchers {
+                await dispatcher.flushForTermination()
+            }
+
+            semaphore.signal()
+        }
+        _ = semaphore.wait(timeout: .now() + 5.0)
     }
 }

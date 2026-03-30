@@ -23,7 +23,7 @@ public final class ConsoleDispatcher: MessageDispatching {
     ///   - showFullMessage: Whether to show complete multi-line messages or just the first line.
     ///   - customColors: Optional custom colour mapping for priority levels.
     ///
-    public init(template: String = "[{timestamp}] [{level}] {message}",
+    public init(template: String = "[{timestamp}] {message}",
                 priorities: Set<MessagePriority> = [.debug, .info, .normal, .low, .background, .high, .critical],
                 enableColours: Bool? = nil,
                 showFullMessage: Bool = false,
@@ -61,8 +61,12 @@ public final class ConsoleDispatcher: MessageDispatching {
         // 3) Prepare template variables
         let now = Date()
         let level = message.priority.description
-        let body = showFullMessage ? message.description : 
-                   message.description.components(separatedBy: "\n").first ?? ""
+        let body: String = {
+            switch message.payload {
+            case .key(let key):   return key
+            case .code(let code): return "\(code)"
+            }
+        }()
         let code: String = {
             if case let .code(codeValue) = message.payload {
                 return "\(codeValue)"
@@ -154,9 +158,11 @@ public final class ConsoleDispatcher: MessageDispatching {
     
     private static let resetColor = "\u{001B}[0;0m"
     
-    /// Auto-detect if colours should be used (TTY detection).
+    /// Auto-detect if colours should be used (TTY + environment detection).
     private static func shouldUseColors() -> Bool {
-        return isatty(STDOUT_FILENO) != 0
+        guard isatty(STDOUT_FILENO) != 0 else { return false }
+        let term = ProcessInfo.processInfo.environment["TERM"] ?? ""
+        return !term.isEmpty && term != "dumb"
     }
     
     /// Apply colour formatting to output based on priority.
@@ -178,5 +184,9 @@ public final class ConsoleDispatcher: MessageDispatching {
     /// Manually flush any pending output (useful for testing).
     public func flush() {
         printQueue.sync {}
+    }
+
+    public func flushForTermination() async {
+        flush()
     }
 }
