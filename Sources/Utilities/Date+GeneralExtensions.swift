@@ -47,8 +47,8 @@ public extension Date {
     /// the Common Era (BC) are returned as negative integers.
     var year: Int {
         let components = Calendar.gregorianUTC.dateComponents([.era, .year], from: self)
-        let y = components.year ?? 0
-        return (components.era ?? 1) == 1 ? y : -y
+        let year       = components.year ?? 0
+        return (components.era ?? 1) == 1 ? year : -year
     }
 
     /// The month component of the date in UTC (1 = January … 12 = December).
