@@ -37,7 +37,6 @@ let package = Package(
                     .copy("TestData"),
                     .process("Documentation.docc")
                 ]),
-
         .testTarget(name: "SoftwareEtudesUtilitiesTests",               dependencies: ["SoftwareEtudesUtilities"],               path: "Tests/Utilities"),
         .testTarget(name: "SoftwareEtudesExecutableConfigurationTests", dependencies: ["SoftwareEtudesExecutableConfiguration"], path: "Tests/ExecutableConfiguration"),
         .testTarget(name: "SoftwareEtudesLoggingTests",                 dependencies: ["SoftwareEtudesLogging"],                 path: "Tests/MessageDispatching/Logging"),

@@ -1,8 +1,16 @@
+////
+////  FileDispatcherTest.swift
+////  SoftwareEtudes
+////
+////  Created by Ani Klekchyan Work on 16.09.25.
+////
 //
-//  FileDispatcherTest.swift
-//  SoftwareEtudes
+//import Foundation
+//import Testing
+//import SoftwareEtudesCoreMessageDispatching
+//import SoftwareEtudesLogging
 //
-//  Created by Ani Klekchyan Work on 16.09.25.
+//// MARK: - Test Helper Classes
 //
 
 import Foundation
