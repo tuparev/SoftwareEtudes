@@ -30,7 +30,7 @@ import Foundation
 /// print(parsed.hours)  // 5
 /// print(parsed.minutes) // 13
 /// ```
-public struct HoursAndMinutes: Codable, Equatable {
+public struct HoursAndMinutes: Codable, Equatable, Sendable {
     /// The hour component (0...23).
     ///
     /// Hours must be within the range 0 to 23 inclusive.
@@ -46,7 +46,7 @@ public struct HoursAndMinutes: Codable, Equatable {
     /// Formatting styles for `HoursAndMinutes`.
     ///
     /// Use these to specify the output format when calling `formatted(_:, options:)`.
-    public enum Style: Codable, Equatable {
+    public enum Style: Codable, Equatable, Sendable {
         /// Format like `"17h 13m"`.
         case hM
         
@@ -93,7 +93,7 @@ public struct HoursAndMinutes: Codable, Equatable {
     /// Options to customize rendering of 12-hour and 24-hour suffixes.
     ///
     /// Combine options to modify suffix case, spacing, or hour padding.
-    public struct Options: OptionSet, Codable {
+    public struct Options: OptionSet, Codable, Sendable {
         public let rawValue: Int
         public init(rawValue: Int) { self.rawValue = rawValue }
         
@@ -122,7 +122,7 @@ public struct HoursAndMinutes: Codable, Equatable {
     /// - `invalidHours`: Hour value was outside 0...23.
     /// - `invalidMinutes`: Minute value was outside 0...59.
     /// - `invalidFormat`: Input string parsing failed due to unexpected format.
-    public enum HoursAndMinutesError: Error, LocalizedError, Codable, Equatable {
+    public enum HoursAndMinutesError: Error, LocalizedError, Codable, Equatable, Sendable {
         case invalidHours(Int)
         case invalidMinutes(Int)
         case invalidFormat(String)
