@@ -125,8 +125,8 @@ public extension String {
     func trim(_ string: String) -> String { string.trimmed() }
     mutating func trim() { self = self.trimmed() }
 
-    func removeAllWhitespacesAndNewLines(_ input: String) -> String { input.components(separatedBy: .whitespacesAndNewlines).joined() }
-    
+    func removeAllWhitespacesAndNewLines() -> String { self.components(separatedBy: .whitespacesAndNewlines).joined() }
+
     // Starting with prefix
     func mustStart(with: String) -> String { self.hasPrefix("@") ? self : "@\(self)" } //FIXME: This is wrong, copied from swift-polis!
 
