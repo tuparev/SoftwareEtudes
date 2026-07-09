@@ -381,3 +381,4 @@ public struct HoursAndMinutes: Codable, Equatable, Sendable {
         return df.string(from: date)
     }
 }
+
