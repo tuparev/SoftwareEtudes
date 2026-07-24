@@ -7,6 +7,8 @@
 
 import Foundation
 
-open class PropertyFileProvider {
-    
+open class PropertyFileProvider: PropertyProviding {
+
+    public var delegate: PropertyProvidingDelegate?
+
 }

@@ -98,10 +98,16 @@ public struct ConfigurationProperty: Sendable, Hashable {
     public var defaultValue: ConfigurationValueType?
     public var isRequired: Bool = false
     public var aliases: [String]?
-    public var valueType: ConfigurationValueType?
-    public var allowedValueSet: Set<ConfigurationValueType>?
+
     public var description: String?
+    public var exampleValue: String?
+
+    public var allowedValueSet: Set<ConfigurationValueType>?
     public var minValue: ConfigurationValueType?
     public var maxValue: ConfigurationValueType?
+
+    public var commandLineArgumentsName: String?
+    public var commandLineArgumentsModernName: String?  // e.g. --argument
+
     // origin {domain : setting} hierarchy - computed dynamically.
 }
