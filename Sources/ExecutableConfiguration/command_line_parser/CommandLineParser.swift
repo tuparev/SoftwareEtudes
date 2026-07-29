@@ -89,6 +89,11 @@ public struct CommandLineParserNotifications {
 
 
 open class CommandLineParser: Configuring {
+    public func configurationFilePath() -> String? {
+        //TODO: Implement me
+        return nil
+    }
+    
 
     public enum CommandLineParserError: Error {
         case invalidArgumentFormat // Argument should start either with "-" or "--"

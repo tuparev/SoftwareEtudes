@@ -8,6 +8,15 @@
 
 import Foundation
 
-open class ConfigurationDomain {
+public protocol ConfigurationDomainProtocol {
+
+}
+open class ConfigurationDomain: ConfigurationDomainProtocol {
+
+    public var name: String
+
+    public init(name: String) {
+        self.name = name
+    }
 
 }

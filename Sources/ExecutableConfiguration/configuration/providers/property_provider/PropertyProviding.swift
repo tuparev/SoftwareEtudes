@@ -15,6 +15,15 @@ public protocol PropertyProviding {
     var delegate: PropertyProvidingDelegate? { get set }
 
     func configurationProperties() async throws -> [ConfigurationProperty]
+
+    /*
+
+     Types of providers:
+     - Property file
+     - User Defaults
+     - Environment
+     - CommandLine
+     */
 }
 
 //MARK: Default implementations
