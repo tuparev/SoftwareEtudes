@@ -28,9 +28,28 @@ open class EnvironmentPropertyProvider: PropertyProviding {
     public func configurationProperties() async throws -> [ConfigurationProperty] {
         // TODO: Implement me!
         // TODO: Select variables based on the policy.
+        // TODO: Map variable names to key paths.
         // TODO: Convert string values.
         // TODO: Create configuration properties.
 
         return []
     }
 }
+
+private extension EnvironmentPropertyProvider {
+    func selectedEnvironmentVariables() -> [String: String] {
+        // TODO: Return selected environment variables.
+        [:]
+    }
+
+    func configurationKeyPath(fromEnvironmentKey key: String) -> String {
+        // TODO: Define the environment-key mapping strategy.
+        key
+    }
+
+    func configurationValue(from stringValue: String) -> ConfigurationValueType {
+        // TODO: Convert the string using the property.
+        .string(stringValue)
+    }
+}
+
