@@ -15,5 +15,6 @@ SoftwareEtudes project.
 - Ani Klekchyan - <a.klekchyan@tuparev.com>
 - Charles Parnot - <cparnot@tuparev.com> - @cparnot
 - Georg Tuparev - <gtupare@tuparev.com> - @tuparev
+- Georgi Karageorgiev - gkarag@tuparev.com 
 - Hunter William Holland - <huholland.fl@gmail.com>
 - Zhanna Hakobyan - <zh.hakobyan@tuparev.com>
